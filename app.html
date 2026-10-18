@@ -51,7 +51,11 @@ header.top { background: var(--panel); border-bottom: 1px solid var(--line); }
 header.top .wrap { padding-block: 18px 12px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; justify-content: space-between; }
 h1 { font-stretch: 78%; font-weight: 700; font-size: 26px; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
 h1 .cod { font-family: var(--font-mono); font-weight: 500; font-size: 12px; letter-spacing: 0.06em; color: var(--muted); margin-left: 10px; vertical-align: 4px; }
-.fuente { color: var(--ink-2); font-size: 13px; }
+.fuente { color: var(--ink-2); font-size: 13px; line-height: 1.45; }
+.fuente span { display: block; }
+.fuente b { font-weight: 600; color: var(--ink); }
+tfoot td { position: sticky; bottom: 0; background: var(--panel-2); font-weight: 600; border-top: 1px solid var(--line); border-bottom: 0; }
+.nota-tabla { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .barra { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
 .barra .wrap { padding-block: 10px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
 .grupo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -127,7 +131,7 @@ tr.sel td { background: var(--accent-soft); }
 <header class="top">
   <div class="wrap">
     <h1>Atlas de Carteras AFP <span class="cod" id="rango">CARTERA DESAGREGADA</span></h1>
-    <div class="fuente" id="fuente">Superintendencia de Pensiones · XML mensual de cartera desagregada</div>
+    <div class="fuente" id="fuente"><span>Fuente: Cartera desagregada SP (XML) y valores cuota.</span></div>
   </div>
 </header>
 
@@ -187,6 +191,7 @@ tr.sel td { background: var(--accent-soft); }
           <h2 id="tabTitulo">Contenido</h2>
           <p class="sub" id="tabSub"></p>
           <div class="tabla-wrap"><table id="tablaNodo"></table></div>
+          <p class="nota-tabla">Cada línea se muestra redondeada y el total se calcula sin redondear; por eso, sumar a mano las líneas visibles puede dar 99,9 % o 100,1 %.</p>
         </div>
       </div>
     </section>
@@ -343,7 +348,7 @@ tr.sel td { background: var(--accent-soft); }
 
     <!-- ============ RENTABILIDAD ============ -->
     <section id="t-ren" hidden>
-      <div id="renFalta" class="aviso" hidden>Faltan los datos de valor cuota (datos/rentab.js). Ejecute python pipeline/actualizar.py.</div>
+      <div id="renFalta" class="aviso" hidden>Faltan los datos de valor cuota (datos/rentab.js).</div>
       <div class="ctrl">
         <div class="grupo"><span class="etq">Fecha de corte</span><select id="renCorte" aria-label="Fecha de corte"></select></div>
         <span class="pie" id="renNota"></span>
@@ -381,19 +386,18 @@ tr.sel td { background: var(--accent-soft); }
             <li><b>Cuadros Nº 22 y 24</b>: forwards nacionales y extranjeros por moneda objeto y moneda contraparte (nocional).</li>
             <li><b>Cuadros Nº 26 y 28</b>: swaps nacionales y extranjeros por contraparte; el monto es la valorización (MtM) del contrato.</li>
             <li><b>Valor cuota diario</b> de la SP (rentabilidad y riesgo), <b>UF</b> diaria (mindicador.cl) para la rentabilidad real y <b>tasas del Tesoro de EE.UU.</b> (FRED) para estimar la sensibilidad de los swaps de tasas. Llegan hasta el último día publicado, más allá del último mes de cartera.</li>
-            <li>Cuadros Nº 3, 5, 6, 9 y 18 (tasas de valoración, clasificación de riesgo, plazo promedio y cuotas de fondos nacionales) quedan en las tablas procesadas para análisis posteriores.</li>
+            <li>Cuadros Nº 3, 5, 6, 9 y 18 (tasas de valoración, clasificación de riesgo, plazo promedio y cuotas de fondos nacionales) se procesan, pero todavía no se muestran en el sitio.</li>
           </ul>
-          <h3>Conciliación del detalle por emisor</h3>
-          <p>El detalle de los Cuadros 11 y 21 se asigna a la fila del Cuadro 1 que le corresponde (sección + código). Diferencias observadas y cómo se tratan:</p>
+          <h3>Notas sobre los datos</h3>
           <ul>
-            <li><b>Forwards en el extranjero</b> (<code>WEM</code>, <code>WEN</code>, <code>YEM</code>, <code>YENC</code>, <code>YENV</code>): el Cuadro 21 informa cada contrato con el doble de su valor de mercado. Frente a los montos exactos del Cuadro 1, la razón tiene mediana 2,0000 en 1.515 combinaciones de fondo, código y mes (2020–2026), con desvíos sólo en montos pequeños por redondeo. Por eso cada fila se corrige con un factor fijo de ½ y el monto informado queda visible en la tabla. No hace falta el tipo de cambio: el Cuadro 21 ya trae cada fila en pesos y en dólares.</li>
-            <li><b>Cuotas de fondos nacionales</b>: el Cuadro 21 trae parte del detalle por administradora; según el período corresponde a la sección «Fondos» o a la inversión indirecta en «Extranjero». Se asigna a la fila con monto más cercano; la otra queda «sin detalle por emisor».</li>
-            <li><b>Promesas de suscripción (<code>PFI</code>)</b>: aparecen en el Cuadro 11 pero no forman parte del activo del Cuadro 1; se excluyen del mapa.</li>
-            <li><b>OTROS</b> (recaudación, valores por depositar, garantías en efectivo): sin detalle por emisor.</li>
+            <li><b>Montos por AFP.</b> El Cuadro 1 informa cada AFP sólo en porcentaje, con dos decimales. Los montos se obtienen como porcentaje × activos y se corrigen dentro del margen de ese redondeo (±0,005 puntos), de modo que cada fondo de cada AFP sume exactamente sus activos y cada instrumento sume exactamente el total del sistema, que la SP sí publica en montos.</li>
+            <li><b>Detalle por emisor.</b> Los Cuadros 11 y 21 se ajustan al monto del Cuadro 1 de su instrumento. Los forwards en el extranjero vienen informados al doble en el Cuadro 21 y se corrigen; el monto original se ve en la columna «Informado C21».</li>
+            <li><b>Marzo y abril de 2018.</b> En esos meses el Cuadro 1 publicado no suma el total de activos (en el Fondo C falta cerca del 0,7 %; según el detalle por emisor, son cuotas de fondos de inversión nacionales). La diferencia se muestra como «No asignado en el Cuadro 1». En agosto de 2020 ocurre lo mismo por montos menores.</li>
+            <li><b>Sumas y redondeo.</b> Los totales y porcentajes se calculan sin redondear. Como cada línea se muestra redondeada, la suma a mano de las líneas visibles puede diferir en una o dos unidades del último decimal (99,9 % o 100,02 %, por ejemplo).</li>
+            <li><b>Fuera del mapa.</b> Las promesas de suscripción de cuotas (<code>PFI</code>) no son activos y se excluyen. «OTROS» (recaudación, valores por depositar, garantías en efectivo) no tiene detalle por emisor.</li>
           </ul>
           <h3>Unidades</h3>
           <p>Montos en millones de dólares (MMUS$) según el dólar observado del último día hábil del mes. La opción MM$ usa el tipo de cambio implícito del XML (activos en pesos / activos en dólares).</p>
-          <div id="concil" class="pie"></div>
         </div>
         <div class="panel">
           <h2>Diccionario de instrumentos</h2>
@@ -404,7 +408,7 @@ tr.sel td { background: var(--accent-soft); }
       </div>
       <div class="panel texto texto-ancho" style="margin-top:16px">
         <h2>Fuentes y estado de los datos</h2>
-        <p>Valores calculados al generar los datos; se actualizan solos con cada ejecución del proceso.</p>
+        <p>Cobertura de cada fuente en esta versión del sitio.</p>
         <div class="tabla-wrap"><table id="metaTabla"></table></div>
       </div>
 
@@ -424,28 +428,6 @@ tr.sel td { background: var(--accent-soft); }
         <p><b>DV01 implícito</b>: pendiente de una regresión de mínimos cuadrados, en ventana móvil de 12 meses (mínimo 8 observaciones), entre la variación mensual del valor de mercado de los swaps extranjeros de tasas (SET + YSET, Cuadro Nº 28) y la variación en puntos básicos de la tasa del Tesoro de EE.UU. a 10 años al cierre de mes (FRED, DGS10). Se expresa en MMUS$ por punto básico y como % del activo del fondo ante un alza de 100 pb. Es una aproximación: los contratos nuevos, los cierres y el pago de flujos también mueven el valor de mercado, y la curva no se mueve siempre en paralelo. <b>Primer mes</b>: primer mes con valorización informada distinta de cero para la AFP y el fondo; si coincide con el primer mes de la serie, el inicio real puede ser anterior.</p>
       </div>
 
-      <div class="grid2b" style="margin-top:16px">
-        <div class="panel texto">
-          <h2>Cómo actualizar</h2>
-          <h3>Todo de una vez</h3>
-          <p>Copie los zip nuevos de cartera desagregada (<code>cartera_desagregadaAAAAMM.zip</code>) en <code>data/</code> y ejecute en la carpeta del proyecto:</p>
-          <p><code>python pipeline/actualizar.py</code></p>
-          <p>Procesa sólo lo nuevo o modificado y además descarga el valor cuota, la UF y las tasas del Tesoro. Al terminar, recargue <code>visualizador/index.html</code>. Con <code>--forzar</code> reprocesa todo (unos 10 minutos).</p>
-          <h3>Sólo rentabilidad y riesgo</h3>
-          <p>El valor cuota se publica a diario, antes que la cartera mensual. Para actualizar sólo esta parte:</p>
-          <p><code>python pipeline/paso5_rentabilidad.py --descargar</code></p>
-          <p>Tarda alrededor de un minuto y medio y necesita acceso a <code>spensiones.cl</code>, <code>mindicador.cl</code> y <code>fred.stlouisfed.org</code>. Si alguno no responde, el proceso se detiene y conserva los datos anteriores. Sin <code>--descargar</code> recalcula con los archivos ya descargados en <code>data/valor_cuota/</code> y <code>data/mercado/</code>.</p>
-          <h3>Meses anteriores a 2020</h3>
-          <p>Los zip de años anteriores se agregan igual: déjelos en <code>data/</code> y ejecute <code>actualizar.py</code>. El mapa, las series, los swaps y la tabla «Quién empezó y cuándo» se recalculan con la serie más larga. El proceso avisa si la estructura de un XML antiguo no coincide con la esperada.</p>
-          <h3>Versión publicada</h3>
-          <p>La versión en línea de este atlas no se actualiza sola; se vuelve a publicar después de correr el proceso.</p>
-        </div>
-        <div class="panel texto">
-          <h2>Tablas procesadas</h2>
-          <p>En <code>procesado/tablas/</code>, una fila por observación, en CSV comprimido (se abren con Excel, Python o R).</p>
-          <div class="tabla-wrap"><table id="tabTablas"></table></div>
-        </div>
-      </div>
     </section>
   </div>
 </main>
@@ -461,8 +443,8 @@ const SEP = '\u001f';
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const CLASES = ['Renta Fija', 'Renta Variable', 'Activos Alternativos', 'Derivados', 'Disponible y otros', 'Otros', 'Sin clasificar'];
 const CLASE_SLOT = { 'Renta Fija': 1, 'Renta Variable': 2, 'Activos Alternativos': 3, 'Derivados': 8, 'Disponible y otros': 4, 'Otros': 7, 'Sin clasificar': 0 };
-const SECCIONES = ['Instituciones Estatales', 'Instituciones Financieras', 'Empresas', 'Fondos Mutuos Y De Inversión', 'Activos Alternativos Nacionales', 'Extranjero', 'Activo Disponible'];
-const SEC_CORTO = { 'Instituciones Estatales': 'Estatales', 'Instituciones Financieras': 'Financieras', 'Empresas': 'Empresas', 'Fondos Mutuos Y De Inversión': 'Fondos mutuos y de inversión', 'Activos Alternativos Nacionales': 'Alternativos nacionales', 'Extranjero': 'Extranjero', 'Activo Disponible': 'Disponible' };
+const SECCIONES = ['Instituciones Estatales', 'Instituciones Financieras', 'Empresas', 'Fondos Mutuos Y De Inversión', 'Activos Alternativos Nacionales', 'Extranjero', 'Activo Disponible', 'No Asignado En El Cuadro 1'];
+const SEC_CORTO = { 'Instituciones Estatales': 'Estatales', 'Instituciones Financieras': 'Financieras', 'Empresas': 'Empresas', 'Fondos Mutuos Y De Inversión': 'Fondos mutuos y de inversión', 'Activos Alternativos Nacionales': 'Alternativos nacionales', 'Extranjero': 'Extranjero', 'Activo Disponible': 'Disponible', 'No Asignado En El Cuadro 1': 'No asignado (fuente)' };
 const S = { per: 0, fondo: 'ALL', afp: 'ALL', unidad: 'usd', tab: 'mapa',
   mapa: { jer: 'fondo', path: [] }, evo: { grupo: 'seccion', modo: 'pct', dentro: '', foco: null },
   der: { vista: 'resumen', cod: 'YSET', orig: 1, sent: 'todos' }, ren: { corte: null }, emi: { q: '', agr: 'e', sec: '', n: 100, sel: null } };
@@ -557,6 +539,11 @@ function tablaSort(table, cols, rows, opts = {}) {
     tb.append(trr);
   });
   table.append(tb);
+  if (opts.pie) {
+    const tf = el('tfoot'); const trf = el('tr');
+    cols.forEach((c, i) => { const v = opts.pie[i]; const td = el('td', { class: c.n ? 'n' : '' }); td.textContent = v == null ? '' : v; trf.append(td); });
+    tf.append(trf); table.append(tf);
+  }
 }
 function corto(c) { const d = B.codigos[c]; if (!d) return ''; const t = d.d.replace(/\.$/, ''); return t.length > 42 ? t.slice(0, 40).replace(/\s+\S*$/, '') + '…' : t; }
 function codBadge(c, extra) { const s = el('span', null); const b = el('span', { class: 'cod' }, c); const d = B.codigos[c.replace(/\(.*$/, '')]; if (d) b.title = d.d; s.append(b); if (extra) s.append(' ', extra); return s; }
@@ -705,7 +692,8 @@ function renderMapa() {
     { k: 'pa', t: '% activo', n: true, fmt: (r) => num(r.pa, 2) }
   ];
   if ((nivelHijos === 'instr' || nivelHijos === 'emisor') && rows.some((r) => r.inf != null)) cols.push({ k: 'inf', t: 'Informado C21', n: true, fmt: (r) => r.inf == null ? '' : fmtU(r.inf, pi), title: () => 'Monto informado en el detalle (Cuadro 21) antes de conciliar con el Cuadro 1' });
-  tablaSort($('tablaNodo'), cols, rows, { sortK: 'net', onClick: (r) => { if (r.k.kids.size) { S.mapa.path = S.mapa.path.concat([r.name]); renderMapa(); } } });
+  const pie = ['Total', fmtU(nodo.net, pi), nodo.net ? num(100, 1) : '', totAct ? num(100 * nodo.net / totAct, 2) : '', ''];
+  tablaSort($('tablaNodo'), cols, rows, { pie, sortK: 'net', onClick: (r) => { if (r.k.kids.size) { S.mapa.path = S.mapa.path.concat([r.name]); renderMapa(); } } });
 }
 function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function serieSel(f = S.fondo, a = S.afp) { return B.c1.series[key(f, a)] || {}; }
@@ -1086,8 +1074,6 @@ function renderDic() {
   tablaSort($('dicTabla'), [{ k: 'c', t: 'Código', fmt: (r) => el('span', { class: 'cod' }, r.c) }, { k: 'd', t: 'Descripción' }, { k: 'cl', t: 'Clase', fmt: (r) => el('span', null, el('span', { class: 'sw', style: 'background:' + claseColor(r.cl) }), r.cl) }, { k: 'sc', t: 'Subclase' }], rows, { sortK: 'c' });
   if ($('dicTabla')._sort.k === 'c' && $('dicTabla')._sort.dir < 0) { $('dicTabla')._sort.dir = 1; tablaSort($('dicTabla'), [{ k: 'c', t: 'Código', fmt: (r) => el('span', { class: 'cod' }, r.c) }, { k: 'd', t: 'Descripción' }, { k: 'cl', t: 'Clase', fmt: (r) => el('span', null, el('span', { class: 'sw', style: 'background:' + claseColor(r.cl) }), r.cl) }, { k: 'sc', t: 'Subclase' }], rows, { sortK: 'c' }); }
   renderMeta();
-  const m = MES[B.periodos[S.per]];
-  if (m) { const c = m.conciliacion.rows; const esc2 = c.filter((r) => r[5] !== 1).length, res = c.filter((r) => r[6]).length; $('concil').textContent = perLbl(B.periodos[S.per]) + ': ' + esc2 + ' filas fondo·AFP·instrumento escaladas al Cuadro 1 y ' + res + ' con diferencia residual. Datos generados el ' + B.meta.generado + '.'; }
 }
 
 function renderMeta() {
@@ -1099,7 +1085,7 @@ function renderMeta() {
     ['Tasas del Tesoro de EE.UU.', R ? perLbl(R.periodos[0]) + ' en adelante' : '—', 'FRED: DGS2, DGS10 y DGS30, cierre de mes.'],
     ['Tipo de cambio', 'mensual', 'Implícito en el XML: activos en pesos / activos en dólares (dólar observado del último día hábil).'],
     ['Instrumentos', Object.keys(B.codigos).length + ' códigos', 'Compendio SP, Libro IV, Título VIII, Capítulo VI, y notas del XML.'],
-    ['Datos generados', B.meta.generado, 'Fecha de la última ejecución del proceso.']
+    ['App actualizada', appActualizada(), 'Última vez que se recalcularon los datos de este sitio.']
   ];
   tablaSort($('metaTabla'), [{ k: 0, t: 'Fuente', noSort: true }, { k: 1, t: 'Cobertura', noSort: true }, { k: 2, t: 'Detalle', noSort: true }], meta, { sortK: null });
   const mets = [
@@ -1109,26 +1095,9 @@ function renderMeta() {
     ['Volatilidad anual', 'vol_anual_12m', 'Desviación estándar de los retornos reales diarios × √250', '12 meses de días con valorización'],
     ['VaR 95 % y 99 % a 1 día', 'var95_1d, var99_1d', 'Percentil 5 % y 1 % de los retornos reales diarios, con signo cambiado (pérdida)', '12 meses (~250 días)'],
     ['CVaR 95 % y 99 % a 1 día', 'cvar95_1d, cvar99_1d', 'Promedio de los retornos iguales o peores que ese percentil, con signo cambiado. También llamado expected shortfall', '12 meses (~250 días)'],
-    ['Caída máxima', 'max_drawdown_36m', 'Mayor caída del índice real diario desde un máximo previo: −mín(índice / máximo acumulado − 1)', '36 meses'],
-    ['VaR 95 % mensual (sólo en tablas)', 'var95_mensual_36m', 'Percentil 5 % de los retornos reales mensuales, con signo cambiado; exige 24 meses', '36 meses'],
-    ['Peor mes (sólo en tablas)', 'peor_mes_36m', 'Menor retorno real mensual, con signo cambiado', '36 meses']
+    ['Caída máxima', 'max_drawdown_36m', 'Mayor caída del índice real diario desde un máximo previo: −mín(índice / máximo acumulado − 1)', '36 meses']
   ];
-  tablaSort($('metTabla'), [{ k: 0, t: 'Métrica', noSort: true }, { k: 1, t: 'Columna en riesgo.csv', noSort: true, fmt: (r) => el('span', { class: 'cod' }, r[1]) }, { k: 2, t: 'Cálculo', noSort: true }, { k: 3, t: 'Ventana', noSort: true }], mets, { sortK: null });
-  const tabs = [
-    ['totales', 'Activos por fondo × AFP en MM$ y MMUS$; tipo de cambio implícito'],
-    ['diversificacion', 'Cuadro 1 con sección, grupo, código y nota; % y montos'],
-    ['posiciones', 'Cuadros 11 y 21: emisor × instrumento × moneda × fondo × AFP'],
-    ['cuotas_nacionales', 'Cuadro 18: cuotas de fondos de inversión y mutuos nacionales por fondo'],
-    ['swaps', 'Cuadros 26 y 28: valorización por tipo, contraparte y unidad'],
-    ['forwards', 'Cuadros 22 y 24: nocional por moneda objeto y contraparte'],
-    ['indicadores', 'Cuadros 3, 5, 6 y 9: tasas de valoración, riesgo y plazo'],
-    ['valor_cuota', 'Valor cuota y patrimonio diarios, con UF (incluye índice Sistema)'],
-    ['rentab_mensual', 'Rentabilidad nominal y real mensual por fondo × AFP'],
-    ['riesgo', 'Métricas de rentabilidad y riesgo a cada fin de mes'],
-    ['swaps_inicio', 'Primer mes con swaps extranjeros de tasas por AFP y fondo'],
-    ['swaps_sensibilidad', 'Valor de mercado y DV01 implícito de los swaps de tasas, mensual']
-  ];
-  tablaSort($('tabTablas'), [{ k: 0, t: 'Tabla', noSort: true, fmt: (r) => el('span', { class: 'cod' }, r[0]) }, { k: 1, t: 'Contenido', noSort: true }], tabs, { sortK: null });
+  tablaSort($('metTabla'), [{ k: 0, t: 'Métrica', noSort: true }, { k: 2, t: 'Cálculo', noSort: true }, { k: 3, t: 'Ventana', noSort: true }], mets, { sortK: null });
 }
 
 // ---------- render general ----------
@@ -1144,6 +1113,13 @@ function render() {
   else renderDic();
   requestAnimationFrame(() => Object.values(charts).forEach((c) => { const d = c.getDom(); if (d.offsetParent) c.resize(); }));
 }
+function appActualizada() { return [B.meta.generado, R && R.generado].filter(Boolean).sort().pop(); }
+function renderFuente() {
+  const f = $('fuente'); f.textContent = '';
+  f.append(el('span', null, 'Fuente: Cartera desagregada SP (XML) y valores cuota.'));
+  f.append(el('span', null, 'Última información: carteras a ' + B.periodos[B.periodos.length - 1] + (R && R.ultimo_dia ? ', valores cuota al ' + R.ultimo_dia : '') + '.'));
+  f.append(el('span', null, 'App actualizada en ' + appActualizada()));
+}
 function errorCarga(e) { const s = $('estado'); s.hidden = false; s.className = 'aviso'; s.textContent = 'No se pudieron cargar los datos: ' + e.message + '. Verifique que la carpeta datos/ esté junto a index.html.'; }
 async function iniciar() {
   if (!window.echarts) { try { await cargarScript('lib/echarts.min.js'); } catch (e) { errorCarga(new Error('falta la biblioteca de gráficos (sin conexión a internet y sin lib/echarts.min.js)')); return; } }
@@ -1153,7 +1129,7 @@ async function iniciar() {
   if (window.DATOS.rentab) { R = await decode(window.DATOS.rentab); delete window.DATOS.rentab; }
   S.per = B.periodos.length - 1;
   $('rango').textContent = perLbl(B.periodos[0]).toUpperCase() + ' – ' + perLbl(B.periodos[S.per]).toUpperCase();
-  $('fuente').textContent = 'Superintendencia de Pensiones · cartera desagregada mensual (XML) · ' + B.periodos.length + ' meses · actualizado ' + B.meta.generado;
+  renderFuente();
   const h = (location.hash || '').replace('#', ''); if (['mapa', 'evo', 'ren', 'der', 'emi', 'met'].includes(h)) S.tab = h;
   construirFiltros();
   $('estado').hidden = true;
