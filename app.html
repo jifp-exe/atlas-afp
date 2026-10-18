@@ -1,0 +1,1168 @@
+<title>Atlas de Carteras AFP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: terminal de analista — banda de filtros fija, pestañas, lienzo de gráfico + tabla de detalle sincronizada */
+:root {
+  --bg: #f2f4f6;
+  --panel: #ffffff;
+  --panel-2: #f7f8fa;
+  --ink: #111a22;
+  --ink-2: #47535f;
+  --muted: #76838f;
+  --line: #dce2e8;
+  --line-2: #c5ced7;
+  --accent: #1d5bbd;
+  --accent-soft: #e3ecfa;
+  --accent-ink: #ffffff;
+  --bad: #b8322f;
+  --good: #1d7a3a;
+  --warn-bg: #fff4dc;
+  --warn-ink: #7a5300;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948; --s0: #9aa4ae;
+  --font-ui: "Archivo", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1318; --panel: #151c23; --panel-2: #1a222b; --ink: #e7ecf1; --ink-2: #b3bfca; --muted: #8693a0;
+    --line: #25303b; --line-2: #34414e; --accent: #6ea2ff; --accent-soft: #1d2b40; --accent-ink: #0b1220;
+    --bad: #ff8a80; --good: #6fd08c; --warn-bg: #3a2e12; --warn-ink: #f3cf7a;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s0: #6b7682;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1318; --panel: #151c23; --panel-2: #1a222b; --ink: #e7ecf1; --ink-2: #b3bfca; --muted: #8693a0;
+  --line: #25303b; --line-2: #34414e; --accent: #6ea2ff; --accent-soft: #1d2b40; --accent-ink: #0b1220;
+  --bad: #ff8a80; --good: #6fd08c; --warn-bg: #3a2e12; --warn-ink: #f3cf7a;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s0: #6b7682;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 14px; line-height: 1.45; margin: 0; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 1480px; margin: 0 auto; }
+header.top { background: var(--panel); border-bottom: 1px solid var(--line); }
+header.top .wrap { padding-block: 18px 12px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; justify-content: space-between; }
+h1 { font-stretch: 78%; font-weight: 700; font-size: 26px; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+h1 .cod { font-family: var(--font-mono); font-weight: 500; font-size: 12px; letter-spacing: 0.06em; color: var(--muted); margin-left: 10px; vertical-align: 4px; }
+.fuente { color: var(--ink-2); font-size: 13px; }
+.barra { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
+.barra .wrap { padding-block: 10px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.grupo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.etq { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+select, input[type="search"] { font: inherit; color: var(--ink); background: var(--panel-2); border: 1px solid var(--line-2); border-radius: var(--r); padding: 5px 8px; min-height: 32px; }
+input[type="search"] { min-width: 0; width: 260px; max-width: 100%; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.chips { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line-2); border-radius: var(--r); overflow: hidden; background: var(--panel-2); max-width: 100%; }
+.chips button { border: 0; background: transparent; padding: 5px 10px; min-height: 30px; font-weight: 600; color: var(--ink-2); border-right: 1px solid var(--line); }
+.chips button:last-child { border-right: 0; }
+.chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.chips button:hover:not([aria-pressed="true"]) { background: var(--accent-soft); }
+.btn { border: 1px solid var(--line-2); background: var(--panel-2); border-radius: var(--r); padding: 5px 10px; min-height: 32px; font-weight: 600; color: var(--ink-2); }
+.btn:hover { background: var(--accent-soft); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+nav.tabs .wrap { display: flex; gap: 2px; overflow-x: auto; padding-block: 0; }
+nav.tabs { background: var(--panel); border-bottom: 1px solid var(--line); }
+nav.tabs button { border: 0; background: none; padding: 11px 14px 9px; font-weight: 600; color: var(--ink-2); border-bottom: 3px solid transparent; white-space: nowrap; font-stretch: 90%; font-size: 15px; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+main .wrap { padding-block: 18px 40px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+section { min-width: 0; }
+.grupo { min-width: 0; max-width: 100%; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; display: grid; gap: 2px; }
+.kpi .l { font-size: 12px; color: var(--ink-2); }
+.kpi .v { font-size: 24px; font-weight: 650; font-stretch: 85%; letter-spacing: -0.01em; }
+.kpi .d { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; min-width: 0; }
+.panel h2 { font-size: 16px; font-stretch: 85%; font-weight: 700; margin: 0 0 2px; text-wrap: balance; }
+.panel .sub { color: var(--ink-2); font-size: 13px; margin: 0 0 10px; max-width: 80ch; }
+.panel .nota { color: var(--muted); font-size: 12px; margin-top: 8px; }
+.ctrl { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 10px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.grid2b { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .grid2, .grid2b { grid-template-columns: minmax(0, 1fr); } }
+.chart { width: 100%; height: 360px; }
+.chart.alto { height: 540px; }
+@media (max-width: 640px) { .chart.alto { height: 420px; } .chart { height: 300px; } h1 { font-size: 22px; } .barra { position: static; } }
+.migas { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-bottom: 8px; font-size: 13px; }
+.migas button { border: 0; background: var(--panel-2); border-radius: 4px; padding: 3px 8px; color: var(--accent); font-weight: 600; }
+.migas button:last-child { color: var(--ink); background: var(--accent-soft); }
+.migas .sep { color: var(--muted); }
+.tabla-wrap { overflow: auto; max-height: 560px; border: 1px solid var(--line); border-radius: var(--r); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+th { position: sticky; top: 0; background: var(--panel-2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); font-weight: 600; z-index: 1; cursor: default; white-space: nowrap; }
+th.ord { cursor: pointer; }
+th.ord:hover { color: var(--accent); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.clic { cursor: pointer; }
+tr.clic:hover td { background: var(--accent-soft); }
+tr.sel td { background: var(--accent-soft); }
+.neg { color: var(--bad); }
+.cod { font-family: var(--font-mono); font-size: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); margin: 4px 0 8px; }
+.aviso { background: var(--warn-bg); color: var(--warn-ink); border-radius: var(--r); padding: 10px 12px; font-size: 13px; }
+.cargando { color: var(--muted); font-size: 13px; padding: 6px 0; }
+.bar-prog { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin: 6px 0; }
+.bar-prog i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .2s; }
+.texto { max-width: 78ch; }
+.texto-ancho { max-width: none; }
+.texto-ancho > p, .texto-ancho > ul { max-width: 100ch; }
+.texto h3 { font-size: 15px; font-stretch: 85%; margin: 18px 0 4px; }
+.texto p, .texto li { color: var(--ink-2); }
+.texto code { font-family: var(--font-mono); font-size: 12px; background: var(--panel-2); padding: 1px 4px; border-radius: 3px; }
+.pie { color: var(--muted); font-size: 12px; }
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <h1>Atlas de Carteras AFP <span class="cod" id="rango">CARTERA DESAGREGADA</span></h1>
+    <div class="fuente" id="fuente">Superintendencia de Pensiones · XML mensual de cartera desagregada</div>
+  </div>
+</header>
+
+<div class="barra" role="region" aria-label="Filtros">
+  <div class="wrap">
+    <div class="grupo">
+      <span class="etq">Mes</span>
+      <button class="btn" id="mesAnt" aria-label="Mes anterior">‹</button>
+      <select id="mes" aria-label="Mes"></select>
+      <button class="btn" id="mesSig" aria-label="Mes siguiente">›</button>
+    </div>
+    <div class="grupo">
+      <span class="etq">Fondo</span>
+      <div class="chips" id="fondos" role="group" aria-label="Fondo"></div>
+    </div>
+    <div class="grupo">
+      <span class="etq">AFP</span>
+      <select id="afp" aria-label="AFP"></select>
+    </div>
+    <div class="grupo">
+      <span class="etq">Unidad</span>
+      <div class="chips" id="unidades" role="group" aria-label="Unidad"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Secciones">
+  <div class="wrap" role="tablist" id="tabs"></div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <div id="estado" class="cargando">Cargando datos…</div>
+
+    <!-- ============ MAPA ============ -->
+    <section id="t-mapa" hidden>
+      <div class="kpis" id="kpis"></div>
+      <div class="grid2" style="margin-top:16px">
+        <div class="panel">
+          <div class="ctrl">
+            <div class="grupo"><span class="etq">Jerarquía</span>
+              <select id="jer" aria-label="Jerarquía del mapa">
+                <option value="fondo">Fondo › AFP › Sección › Instrumento › Emisor</option>
+                <option value="afp">AFP › Fondo › Sección › Instrumento › Emisor</option>
+                <option value="seccion">Sección › Instrumento › Emisor</option>
+                <option value="clase">Clase de activo › Subclase › Instrumento › Emisor</option>
+                <option value="emisor">Emisor › Instrumento</option>
+              </select>
+            </div>
+          </div>
+          <div class="migas" id="migas"></div>
+          <div class="leyenda" id="leyClases"></div>
+          <div id="treemap" class="chart alto" role="img" aria-label="Mapa de la cartera"></div>
+          <div class="nota" id="notaMapa">El área de cada rectángulo es el valor positivo de las posiciones. Los derivados con valor de mercado negativo no ocupan área: aparecen en la tabla con signo negativo. Haga clic en un rectángulo o en una fila para bajar un nivel. Fuente: Cuadros Nº 1, 11 y 21.</div>
+        </div>
+        <div class="panel">
+          <h2 id="tabTitulo">Contenido</h2>
+          <p class="sub" id="tabSub"></p>
+          <div class="tabla-wrap"><table id="tablaNodo"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EVOLUCIÓN ============ -->
+    <section id="t-evo" hidden>
+      <div class="panel">
+        <h2 id="evoTitulo">Composición en el tiempo</h2>
+        <p class="sub" id="evoSub">Cuadro Nº 1, diversificación por instrumentos financieros. Haga clic en una serie para compararla entre AFP.</p>
+        <div class="ctrl">
+          <div class="grupo"><span class="etq">Agrupar por</span>
+            <div class="chips" id="evoGrupo" role="group" aria-label="Agrupar por"></div>
+          </div>
+          <div class="grupo" id="evoDentroG" hidden><span class="etq">Dentro de</span><select id="evoDentro" aria-label="Dentro de"></select></div>
+          <div class="grupo"><span class="etq">Escala</span>
+            <div class="chips" id="evoModo" role="group" aria-label="Escala"></div>
+          </div>
+        </div>
+        <div class="leyenda" id="evoLey"></div>
+        <div id="evoChart" class="chart alto"></div>
+      </div>
+      <div class="grid2b">
+        <div class="panel">
+          <h2 id="cmpTitulo">Comparación entre AFP</h2>
+          <p class="sub" id="cmpSub"></p>
+          <div class="leyenda" id="cmpLey"></div>
+          <div id="cmpChart" class="chart"></div>
+        </div>
+        <div class="panel">
+          <h2>Activos por tipo de fondo</h2>
+          <p class="sub" id="totSub">MMUS$ al cierre de cada mes. Cuadro Nº 1.</p>
+          <div class="leyenda" id="totLey"></div>
+          <div id="totChart" class="chart"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DERIVADOS ============ -->
+    <section id="t-der" hidden>
+      <div class="ctrl">
+        <div class="grupo"><span class="etq">Vista</span><div class="chips" id="derVista" role="group" aria-label="Vista de derivados"></div></div>
+      </div>
+      <div id="derAvisoTodos" class="aviso" hidden>Está viendo la suma de los cinco tipos de fondo. Para el análisis del Fondo E, selecciónelo arriba en «Fondo».</div>
+
+      <div id="dv-resumen">
+        <div class="panel">
+          <h2>Valor de mercado neto de derivados</h2>
+          <p class="sub" id="resSub">Porcentaje del activo del fondo. Suma de las líneas de derivados del Cuadro Nº 1 (swaps y forwards, nacionales y extranjeros).</p>
+          <div class="leyenda" id="resLey"></div>
+          <div id="resChart" class="chart"></div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <h2 id="resTabTit">Derivados del mes</h2>
+          <p class="sub">Valor neto por código de instrumento y variación respecto del mes anterior.</p>
+          <div class="tabla-wrap"><table id="resTabla"></table></div>
+        </div>
+      </div>
+
+      <div id="dv-swaps" hidden>
+        <div class="panel">
+          <div class="ctrl"><div class="grupo"><span class="etq">Tipo de swap</span><div class="chips" id="swCod" role="group" aria-label="Tipo de swap"></div></div></div>
+          <h2 id="swTit">Valorización de swaps</h2>
+          <p class="sub" id="swSub">Valor de mercado (MtM) del contrato, MMUS$. Cuadros Nº 26 (swaps nacionales) y 28 (swaps extranjeros).</p>
+          <div class="leyenda" id="swLey"></div>
+          <div id="swChart" class="chart"></div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <h2>Como porcentaje del fondo</h2>
+          <p class="sub">MtM del tipo de swap seleccionado dividido por el activo total de cada AFP en ese fondo.</p>
+          <div class="leyenda" id="swPctLey"></div>
+          <div id="swPctChart" class="chart"></div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <h2 id="swTabTit">Contrapartes del mes</h2>
+          <p class="sub">MtM por contraparte y unidad del contrato, MMUS$, ordenado de la mayor pérdida a la mayor ganancia. Haga clic en un encabezado para reordenar.</p>
+          <div class="tabla-wrap"><table id="swTabla"></table></div>
+        </div>
+      </div>
+
+      <div id="dv-sens" hidden>
+        <div class="panel">
+          <h2>Quién empezó y cuándo</h2>
+          <p class="sub">Primer mes con valorización informada de swaps extranjeros de tasas de interés (códigos SET e YSET, Cuadro Nº 28), por AFP y tipo de fondo. Cuando el primer mes coincide con el inicio de la serie («o antes»), el inicio real es anterior. Hasta septiembre de 2017 Habitat los informaba como SET (sin garantías) y desde entonces como YSET (con garantías bilaterales).</p>
+          <div class="tabla-wrap"><table id="iniTabla"></table></div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <h2 id="sensTit">Sensibilidad a las tasas de EE.UU.</h2>
+          <p class="sub" id="sensSub"></p>
+          <div class="leyenda" id="sensLey"></div>
+          <div id="sensChart" class="chart"></div>
+          <p class="nota">Estimación: pendiente de una regresión móvil de 12 meses entre la variación mensual del valor de mercado de estos swaps y la variación de la tasa del Tesoro a 10 años (FRED, DGS10). Los contratos nuevos, los cierres y el pago de flujos también mueven el valor de mercado, así que la cifra es aproximada.</p>
+        </div>
+        <div class="grid2b" style="margin-top:16px">
+          <div class="panel">
+            <h2>Cuánto aporta cada AFP</h2>
+            <p class="sub" id="sensAbsSub">Pérdida estimada en MMUS$ por cada punto básico de alza de la tasa a 10 años, apilada por AFP.</p>
+            <div class="leyenda" id="sensAbsLey"></div>
+            <div id="sensAbsChart" class="chart"></div>
+          </div>
+          <div class="panel">
+            <h2>Tasa del Tesoro de EE.UU.</h2>
+            <p class="sub">Cierre de mes, %. FRED (DGS2, DGS10, DGS30).</p>
+            <div class="leyenda" id="ustLey"></div>
+            <div id="ustChart" class="chart"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="dv-fwd" hidden>
+        <div class="panel">
+          <div class="ctrl">
+            <div class="grupo"><span class="etq">Mercado</span><div class="chips" id="fwOrig" role="group" aria-label="Mercado"></div></div>
+            <div class="grupo"><span class="etq">Sentido</span><div class="chips" id="fwSent" role="group" aria-label="Sentido"></div></div>
+          </div>
+          <h2>Forwards por moneda objeto</h2>
+          <p class="sub" id="fwSub">Unidades del contrato en función del activo objeto, expresadas en MMUS$ (nocional). Cuadros Nº 22 (nacionales) y 24 (extranjeros).</p>
+          <div class="leyenda" id="fwLey"></div>
+          <div id="fwChart" class="chart"></div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <h2 id="fwTabTit">Forwards del mes</h2>
+          <p class="sub">Nocional por moneda objeto, código y moneda contraparte. MMUS$.</p>
+          <div class="tabla-wrap"><table id="fwTabla"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EMISORES ============ -->
+    <section id="t-emi" hidden>
+      <div class="panel">
+        <h2>Buscador de emisores y contrapartes</h2>
+        <p class="sub">Posiciones del mes por emisor (Cuadros Nº 11 y 21), conciliadas con el Cuadro Nº 1. Haga clic en una fila para ver su historia.</p>
+        <div class="ctrl">
+          <div class="grupo"><input type="search" id="emiQ" placeholder="Buscar emisor, p. ej. TESORERIA, BANK OF AMERICA" aria-label="Buscar emisor"></div>
+          <div class="grupo"><span class="etq">Agrupar</span>
+            <select id="emiAgr" aria-label="Agrupar">
+              <option value="e">Emisor</option>
+              <option value="ei">Emisor e instrumento</option>
+              <option value="eim">Emisor, instrumento y moneda</option>
+            </select></div>
+          <div class="grupo"><span class="etq">Sección</span><select id="emiSec" aria-label="Sección"></select></div>
+        </div>
+        <div class="tabla-wrap"><table id="emiTabla"></table></div>
+        <div class="ctrl" style="margin-top:8px"><button class="btn" id="emiMas">Mostrar más filas</button><span class="pie" id="emiCuenta"></span></div>
+      </div>
+      <div class="panel" id="histPanel" hidden>
+        <h2 id="histTit">Historia</h2>
+        <p class="sub" id="histSub"></p>
+        <div class="bar-prog" id="histProg" hidden><i></i></div>
+        <div class="leyenda" id="histLey"></div>
+        <div id="histChart" class="chart"></div>
+      </div>
+    </section>
+
+    <!-- ============ RENTABILIDAD ============ -->
+    <section id="t-ren" hidden>
+      <div id="renFalta" class="aviso" hidden>Faltan los datos de valor cuota (datos/rentab.js). Ejecute python pipeline/actualizar.py.</div>
+      <div class="ctrl">
+        <div class="grupo"><span class="etq">Fecha de corte</span><select id="renCorte" aria-label="Fecha de corte"></select></div>
+        <span class="pie" id="renNota"></span>
+      </div>
+      <div class="kpis" id="renKpis"></div>
+      <div class="panel" style="margin-top:16px">
+        <h2 id="renTabTit">Rentabilidad real y riesgo</h2>
+        <p class="sub">Rentabilidad real: variación del valor cuota deflactada por la UF. 36 y 60 meses, anualizadas. Volatilidad y VaR/CVaR históricos con los retornos reales diarios de los últimos 12 meses (pérdida a 1 día que se supera el 5 % o 1 % de los días; CVaR es la pérdida promedio en esos días). Caída máxima: peor caída desde un máximo en 36 meses. «Sistema» pondera las AFP por patrimonio.</p>
+        <div class="tabla-wrap"><table id="renTabla"></table></div>
+      </div>
+      <div class="grid2b" style="margin-top:16px">
+        <div class="panel">
+          <h2 id="renYtdTit">Trayectoria del año</h2>
+          <p class="sub" id="renYtdSub">Índice real diario, 31 de diciembre = 100.</p>
+          <div class="leyenda" id="renYtdLey"></div>
+          <div id="renYtdChart" class="chart"></div>
+        </div>
+        <div class="panel">
+          <h2 id="renMesTit">Rentabilidad real mensual</h2>
+          <p class="sub" id="renMesSub">Últimos 36 meses.</p>
+          <div id="renMesChart" class="chart"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MÉTODO ============ -->
+    <section id="t-met" hidden>
+      <div class="grid2b">
+        <div class="panel texto">
+          <h2>Cómo se construyen los datos</h2>
+          <p>Cada mes la Superintendencia de Pensiones publica un XML (esquema <code>cartera_desagregada-v1.0.xsd</code>) con 29 cuadros. Este atlas usa los siguientes:</p>
+          <ul>
+            <li><b>Cuadro Nº 1</b>: activos por tipo de fondo y AFP, diversificados por instrumento, con subtotales por sección (estatales, financieras, empresas, fondos, alternativos nacionales, extranjero, disponible). Es la fuente oficial de los montos del mapa y de las series. Por AFP sólo trae porcentajes con dos decimales; el monto se obtiene como porcentaje × activos totales.</li>
+            <li><b>Cuadros Nº 11 y 21</b>: cartera nacional y extranjera por emisor e instrumento. Dan el último nivel del mapa (emisor y moneda).</li>
+            <li><b>Cuadros Nº 22 y 24</b>: forwards nacionales y extranjeros por moneda objeto y moneda contraparte (nocional).</li>
+            <li><b>Cuadros Nº 26 y 28</b>: swaps nacionales y extranjeros por contraparte; el monto es la valorización (MtM) del contrato.</li>
+            <li><b>Valor cuota diario</b> de la SP (rentabilidad y riesgo), <b>UF</b> diaria (mindicador.cl) para la rentabilidad real y <b>tasas del Tesoro de EE.UU.</b> (FRED) para estimar la sensibilidad de los swaps de tasas. Llegan hasta el último día publicado, más allá del último mes de cartera.</li>
+            <li>Cuadros Nº 3, 5, 6, 9 y 18 (tasas de valoración, clasificación de riesgo, plazo promedio y cuotas de fondos nacionales) quedan en las tablas procesadas para análisis posteriores.</li>
+          </ul>
+          <h3>Conciliación del detalle por emisor</h3>
+          <p>El detalle de los Cuadros 11 y 21 se asigna a la fila del Cuadro 1 que le corresponde (sección + código). Diferencias observadas y cómo se tratan:</p>
+          <ul>
+            <li><b>Forwards en el extranjero</b> (<code>WEM</code>, <code>WEN</code>, <code>YEM</code>, <code>YENC</code>, <code>YENV</code>): el Cuadro 21 informa cada contrato con el doble de su valor de mercado. Frente a los montos exactos del Cuadro 1, la razón tiene mediana 2,0000 en 1.515 combinaciones de fondo, código y mes (2020–2026), con desvíos sólo en montos pequeños por redondeo. Por eso cada fila se corrige con un factor fijo de ½ y el monto informado queda visible en la tabla. No hace falta el tipo de cambio: el Cuadro 21 ya trae cada fila en pesos y en dólares.</li>
+            <li><b>Cuotas de fondos nacionales</b>: el Cuadro 21 trae parte del detalle por administradora; según el período corresponde a la sección «Fondos» o a la inversión indirecta en «Extranjero». Se asigna a la fila con monto más cercano; la otra queda «sin detalle por emisor».</li>
+            <li><b>Promesas de suscripción (<code>PFI</code>)</b>: aparecen en el Cuadro 11 pero no forman parte del activo del Cuadro 1; se excluyen del mapa.</li>
+            <li><b>OTROS</b> (recaudación, valores por depositar, garantías en efectivo): sin detalle por emisor.</li>
+          </ul>
+          <h3>Unidades</h3>
+          <p>Montos en millones de dólares (MMUS$) según el dólar observado del último día hábil del mes. La opción MM$ usa el tipo de cambio implícito del XML (activos en pesos / activos en dólares).</p>
+          <div id="concil" class="pie"></div>
+        </div>
+        <div class="panel">
+          <h2>Diccionario de instrumentos</h2>
+          <p class="sub">Compendio de Normas SP, Libro IV, Título VIII, Capítulo VI (tablas de códigos) y notas del propio XML.</p>
+          <div class="ctrl"><input type="search" id="dicQ" placeholder="Buscar código o descripción" aria-label="Buscar en el diccionario"></div>
+          <div class="tabla-wrap"><table id="dicTabla"></table></div>
+        </div>
+      </div>
+      <div class="panel texto texto-ancho" style="margin-top:16px">
+        <h2>Fuentes y estado de los datos</h2>
+        <p>Valores calculados al generar los datos; se actualizan solos con cada ejecución del proceso.</p>
+        <div class="tabla-wrap"><table id="metaTabla"></table></div>
+      </div>
+
+      <div class="panel texto texto-ancho" style="margin-top:16px">
+        <h2>Métricas de rentabilidad y riesgo</h2>
+        <p>Se calculan con el <b>valor cuota diario</b> que publica la Superintendencia para cada AFP y tipo de fondo. Todas son <b>reales</b>: el valor cuota se divide por la UF del mismo día, igual que en las cifras oficiales de la SP. Se usan sólo los días con valorización; los fines de semana y feriados, en que el valor cuota se repite, se descartan. «Sistema» es un índice que encadena cada día el promedio de las AFP ponderado por su patrimonio del día anterior.</p>
+        <div class="tabla-wrap"><table id="metTabla"></table></div>
+        <h3>Cómo leerlas</h3>
+        <ul>
+          <li><b>VaR 95 % = 0,58 %</b> significa que en 1 de cada 20 días de valorización del último año el fondo perdió más de 0,58 % en un solo día. No es la pérdida máxima posible.</li>
+          <li><b>CVaR 95 %</b> responde a la pregunta siguiente: en esos peores días, ¿cuánto se perdió en promedio? Siempre es mayor o igual que el VaR y capta mejor las colas.</li>
+          <li><b>Caída máxima</b> mide el peor recorrido desde un máximo hasta un mínimo posterior dentro de los últimos 36 meses, aunque el fondo después se haya recuperado. Es la pérdida que habría visto quien entró en el peor momento.</li>
+          <li>Los VaR y CVaR son <b>históricos</b>: no suponen una distribución normal ni se escalan a otros horizontes. Con unos 250 días por ventana, el VaR 99 % descansa en sólo 2 o 3 observaciones y es ruidoso.</li>
+          <li>El valor cuota incorpora la valorización de la cartera completa, incluidos los derivados. Los saltos de un día pueden reflejar cambios de precios acumulados (por ejemplo, instrumentos que se valorizan con rezago).</li>
+        </ul>
+        <h3>Sensibilidad de los swaps de tasas (pestaña Derivados)</h3>
+        <p><b>DV01 implícito</b>: pendiente de una regresión de mínimos cuadrados, en ventana móvil de 12 meses (mínimo 8 observaciones), entre la variación mensual del valor de mercado de los swaps extranjeros de tasas (SET + YSET, Cuadro Nº 28) y la variación en puntos básicos de la tasa del Tesoro de EE.UU. a 10 años al cierre de mes (FRED, DGS10). Se expresa en MMUS$ por punto básico y como % del activo del fondo ante un alza de 100 pb. Es una aproximación: los contratos nuevos, los cierres y el pago de flujos también mueven el valor de mercado, y la curva no se mueve siempre en paralelo. <b>Primer mes</b>: primer mes con valorización informada distinta de cero para la AFP y el fondo; si coincide con el primer mes de la serie, el inicio real puede ser anterior.</p>
+      </div>
+
+      <div class="grid2b" style="margin-top:16px">
+        <div class="panel texto">
+          <h2>Cómo actualizar</h2>
+          <h3>Todo de una vez</h3>
+          <p>Copie los zip nuevos de cartera desagregada (<code>cartera_desagregadaAAAAMM.zip</code>) en <code>data/</code> y ejecute en la carpeta del proyecto:</p>
+          <p><code>python pipeline/actualizar.py</code></p>
+          <p>Procesa sólo lo nuevo o modificado y además descarga el valor cuota, la UF y las tasas del Tesoro. Al terminar, recargue <code>visualizador/index.html</code>. Con <code>--forzar</code> reprocesa todo (unos 10 minutos).</p>
+          <h3>Sólo rentabilidad y riesgo</h3>
+          <p>El valor cuota se publica a diario, antes que la cartera mensual. Para actualizar sólo esta parte:</p>
+          <p><code>python pipeline/paso5_rentabilidad.py --descargar</code></p>
+          <p>Tarda alrededor de un minuto y medio y necesita acceso a <code>spensiones.cl</code>, <code>mindicador.cl</code> y <code>fred.stlouisfed.org</code>. Si alguno no responde, el proceso se detiene y conserva los datos anteriores. Sin <code>--descargar</code> recalcula con los archivos ya descargados en <code>data/valor_cuota/</code> y <code>data/mercado/</code>.</p>
+          <h3>Meses anteriores a 2020</h3>
+          <p>Los zip de años anteriores se agregan igual: déjelos en <code>data/</code> y ejecute <code>actualizar.py</code>. El mapa, las series, los swaps y la tabla «Quién empezó y cuándo» se recalculan con la serie más larga. El proceso avisa si la estructura de un XML antiguo no coincide con la esperada.</p>
+          <h3>Versión publicada</h3>
+          <p>La versión en línea de este atlas no se actualiza sola; se vuelve a publicar después de correr el proceso.</p>
+        </div>
+        <div class="panel texto">
+          <h2>Tablas procesadas</h2>
+          <p>En <code>procesado/tablas/</code>, una fila por observación, en CSV comprimido (se abren con Excel, Python o R).</p>
+          <div class="tabla-wrap"><table id="tabTablas"></table></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<script src="datos/indice.js"></script>
+<script src="datos/base.js"></script>
+<script src="datos/rentab.js"></script>
+<script>
+(function () {
+'use strict';
+const SEP = '\u001f';
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const CLASES = ['Renta Fija', 'Renta Variable', 'Activos Alternativos', 'Derivados', 'Disponible y otros', 'Otros', 'Sin clasificar'];
+const CLASE_SLOT = { 'Renta Fija': 1, 'Renta Variable': 2, 'Activos Alternativos': 3, 'Derivados': 8, 'Disponible y otros': 4, 'Otros': 7, 'Sin clasificar': 0 };
+const SECCIONES = ['Instituciones Estatales', 'Instituciones Financieras', 'Empresas', 'Fondos Mutuos Y De Inversión', 'Activos Alternativos Nacionales', 'Extranjero', 'Activo Disponible'];
+const SEC_CORTO = { 'Instituciones Estatales': 'Estatales', 'Instituciones Financieras': 'Financieras', 'Empresas': 'Empresas', 'Fondos Mutuos Y De Inversión': 'Fondos mutuos y de inversión', 'Activos Alternativos Nacionales': 'Alternativos nacionales', 'Extranjero': 'Extranjero', 'Activo Disponible': 'Disponible' };
+const S = { per: 0, fondo: 'ALL', afp: 'ALL', unidad: 'usd', tab: 'mapa',
+  mapa: { jer: 'fondo', path: [] }, evo: { grupo: 'seccion', modo: 'pct', dentro: '', foco: null },
+  der: { vista: 'resumen', cod: 'YSET', orig: 1, sent: 'todos' }, ren: { corte: null }, emi: { q: '', agr: 'e', sec: '', n: 100, sel: null } };
+let B = null, R = null; const MES = {}; const charts = {};
+const $ = (id) => document.getElementById(id);
+const nfc = (d) => new Intl.NumberFormat('es-CL', { minimumFractionDigits: d, maximumFractionDigits: d });
+const NF = [nfc(0), nfc(1), nfc(2), nfc(3)];
+
+// ---------- utilidades ----------
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function slot(i) { return css('--s' + i); }
+function perLbl(p) { const [y, m] = p.split('-'); return MESES[+m - 1] + ' ' + y; }
+function perCorto(p) { const [y, m] = p.split('-'); return MESES[+m - 1] + ' ' + y.slice(2); }
+function key(f, a) { return (f === 'ALL' ? 'TOTAL' : f) + '|' + (a === 'ALL' ? 'TOTAL' : a); }
+function totalSel(pi, f = S.fondo, a = S.afp) { const t = B.totales[key(f, a)]; return t ? t[pi] : null; }
+function num(v, d) { return v == null || !isFinite(v) ? '—' : NF[d].format(v); }
+function autoDec(v) { const a = Math.abs(v); return a >= 100 ? 0 : a >= 1 ? 1 : 2; }
+function fmtU(v, pi, unidad = S.unidad, tot) {
+  if (v == null || !isFinite(v)) return '—';
+  if (unidad === 'clp') return num(v * (B.tc[pi] || NaN), 0);
+  if (unidad === 'pct') { const t = tot != null ? tot : totalSel(pi); return t ? num(100 * v / t, 2) : '—'; }
+  return num(v, autoDec(v));
+}
+function uLbl(unidad = S.unidad) { return unidad === 'clp' ? 'MM$' : unidad === 'pct' ? '% del activo' : 'MMUS$'; }
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) { if (k === 'class') e.className = attrs[k]; else if (k === 'text') e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]); }
+  for (const c of kids) if (c != null) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+function lum(hex) { const h = hex.replace('#', ''); const r = parseInt(h.substr(0, 2), 16) / 255, g = parseInt(h.substr(2, 2), 16) / 255, b = parseInt(h.substr(4, 2), 16) / 255; const f = (c) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); }
+function inkOn(hex) { return lum(hex) > 0.36 ? '#0b0b0b' : '#ffffff'; }
+function claseColor(c) { return slot(CLASE_SLOT[c] != null ? CLASE_SLOT[c] : 0); }
+async function decode(b64) {
+  const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const txt = await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  return JSON.parse(txt);
+}
+function cargarScript(src) {
+  return new Promise((ok, err) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => err(new Error('No se pudo cargar ' + src)); document.head.appendChild(s); });
+}
+async function cargarMes(p) {
+  if (MES[p]) return MES[p];
+  if (!(window.DATOS && window.DATOS['mes:' + p])) await cargarScript('datos/mes/' + p + '.js');
+  const d = await decode(window.DATOS['mes:' + p]);
+  delete window.DATOS['mes:' + p];
+  MES[p] = d; return d;
+}
+function chart(id) {
+  if (!charts[id]) { charts[id] = echarts.init($(id), null, { renderer: 'canvas' }); }
+  return charts[id];
+}
+function baseOpt() {
+  const ink = css('--ink-2'), muted = css('--muted'), line = css('--line');
+  return {
+    animation: false,
+    textStyle: { fontFamily: css('--font-ui'), color: ink },
+    grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
+    tooltip: { backgroundColor: css('--panel'), borderColor: css('--line-2'), textStyle: { color: css('--ink'), fontSize: 12 }, confine: true },
+    xAxis: { type: 'category', axisLine: { lineStyle: { color: css('--line-2') } }, axisTick: { show: false }, axisLabel: { color: muted, fontSize: 11 }, splitLine: { show: false } },
+    yAxis: { type: 'value', axisLine: { show: false }, axisLabel: { color: muted, fontSize: 11 }, splitLine: { lineStyle: { color: line, type: 'solid' } } }
+  };
+}
+function leyenda(cont, items) {
+  const c = $(cont); c.textContent = '';
+  for (const it of items) { const s = el('span', null, el('span', { class: 'sw', style: 'background:' + it.color + (it.line ? ';height:3px;vertical-align:3px' : '') }), it.name); c.append(s); }
+}
+function tablaSort(table, cols, rows, opts = {}) {
+  // cols: [{k, t, n(bool num), fmt(fn), cls(fn)}]
+  const st = table._sort || (table._sort = { k: opts.sortK || null, dir: opts.dir || -1 });
+  if (st.k && !cols.some((c) => c.k === st.k)) st.k = opts.sortK || null;
+  if (st.k) { const c = cols.find((x) => x.k === st.k); rows = rows.slice().sort((a, b) => { const va = c.sv ? c.sv(a) : a[st.k], vb = c.sv ? c.sv(b) : b[st.k]; if (c.n) return st.dir * ((va ?? -Infinity) - (vb ?? -Infinity)); return st.dir * String(va).localeCompare(String(vb), 'es'); }); }
+  table.textContent = '';
+  const thead = el('thead'); const tr = el('tr');
+  for (const c of cols) {
+    const th = el('th', { class: (c.n ? 'n ' : '') + (c.noSort ? '' : 'ord'), scope: 'col' }, c.t + (st.k === c.k ? (st.dir < 0 ? ' ↓' : ' ↑') : ''));
+    if (!c.noSort) th.addEventListener('click', () => { if (st.k === c.k) st.dir = -st.dir; else { st.k = c.k; st.dir = c.n ? -1 : 1; } tablaSort(table, cols, rows, opts); });
+    tr.append(th);
+  }
+  thead.append(tr); table.append(thead);
+  const tb = el('tbody'); const lim = opts.limite || rows.length;
+  rows.slice(0, lim).forEach((r) => {
+    const trr = el('tr', { class: (opts.onClick ? 'clic' : '') + (opts.isSel && opts.isSel(r) ? ' sel' : '') });
+    for (const c of cols) {
+      const v = c.fmt ? c.fmt(r) : r[c.k];
+      const td = el('td', { class: (c.n ? 'n' : '') + (c.neg && r[c.k] < 0 ? ' neg' : '') });
+      if (v && v.nodeType) td.append(v); else td.textContent = v == null ? '' : v;
+      if (c.title) td.title = c.title(r) || '';
+      trr.append(td);
+    }
+    if (opts.onClick) { trr.tabIndex = 0; trr.addEventListener('click', () => opts.onClick(r)); trr.addEventListener('keydown', (e) => { if (e.key === 'Enter') opts.onClick(r); }); }
+    tb.append(trr);
+  });
+  table.append(tb);
+}
+function corto(c) { const d = B.codigos[c]; if (!d) return ''; const t = d.d.replace(/\.$/, ''); return t.length > 42 ? t.slice(0, 40).replace(/\s+\S*$/, '') + '…' : t; }
+function codBadge(c, extra) { const s = el('span', null); const b = el('span', { class: 'cod' }, c); const d = B.codigos[c.replace(/\(.*$/, '')]; if (d) b.title = d.d; s.append(b); if (extra) s.append(' ', extra); return s; }
+
+// ---------- filtros ----------
+function construirFiltros() {
+  const sel = $('mes'); sel.textContent = '';
+  B.periodos.slice().reverse().forEach((p) => { const i = B.periodos.indexOf(p); sel.append(el('option', { value: i }, perLbl(p))); });
+  sel.value = S.per;
+  sel.addEventListener('change', () => { S.per = +sel.value; render(); });
+  $('mesAnt').addEventListener('click', () => { if (S.per > 0) { S.per--; sel.value = S.per; render(); } });
+  $('mesSig').addEventListener('click', () => { if (S.per < B.periodos.length - 1) { S.per++; sel.value = S.per; render(); } });
+  chips('fondos', [['ALL', 'Todos'], ...B.fondos.map((f) => [f, f])], () => S.fondo, (v) => { S.fondo = v; S.mapa.path = []; render(); });
+  const a = $('afp'); a.append(el('option', { value: 'ALL' }, 'Todas'));
+  B.afps.forEach((x) => a.append(el('option', { value: x }, x.charAt(0) + x.slice(1).toLowerCase())));
+  a.addEventListener('change', () => { S.afp = a.value; S.mapa.path = []; render(); });
+  chips('unidades', [['usd', 'MMUS$'], ['clp', 'MM$'], ['pct', '%']], () => S.unidad, (v) => { S.unidad = v; render(); });
+  const tabs = [['mapa', 'Mapa de la cartera'], ['evo', 'Evolución'], ['ren', 'Rentabilidad y riesgo'], ['der', 'Derivados'], ['emi', 'Emisores'], ['met', 'Método y diccionario']];
+  const tl = $('tabs');
+  tabs.forEach(([k, t]) => { const b = el('button', { role: 'tab', 'aria-selected': String(S.tab === k), id: 'tab-' + k }, t); b.addEventListener('click', () => { S.tab = k; try { history.replaceState(null, '', '#' + k); } catch (e) {} render(); }); tl.append(b); });
+  $('jer').addEventListener('change', (e) => { S.mapa.jer = e.target.value; S.mapa.path = []; renderMapa(); });
+  chips('evoGrupo', [['seccion', 'Sección'], ['clase', 'Clase de activo'], ['instr', 'Instrumento']], () => S.evo.grupo, (v) => { S.evo.grupo = v; S.evo.foco = null; renderEvo(); });
+  chips('evoModo', [['pct', '% del fondo'], ['usd', 'MMUS$']], () => S.evo.modo, (v) => { S.evo.modo = v; renderEvo(); });
+  $('evoDentro').addEventListener('change', (e) => { S.evo.dentro = e.target.value; S.evo.foco = null; renderEvo(); });
+  chips('derVista', [['resumen', 'Resumen'], ['swaps', 'Swaps'], ['sens', 'Swaps de tasas: quién y cuánto'], ['fwd', 'Forwards']], () => S.der.vista, (v) => { S.der.vista = v; renderDer(); });
+  chips('fwOrig', [[1, 'Extranjero'], [0, 'Nacional']], () => S.der.orig, (v) => { S.der.orig = +v; renderDer(); });
+  chips('fwSent', [['todos', 'Todos'], ['C', 'Compra'], ['V', 'Venta']], () => S.der.sent, (v) => { S.der.sent = v; renderDer(); });
+  let tq; $('emiQ').addEventListener('input', (e) => { clearTimeout(tq); tq = setTimeout(() => { S.emi.q = e.target.value; S.emi.n = 100; renderEmi(); }, 200); });
+  $('emiAgr').addEventListener('change', (e) => { S.emi.agr = e.target.value; S.emi.n = 100; renderEmi(); });
+  const es = $('emiSec'); es.append(el('option', { value: '' }, 'Todas'));
+  SECCIONES.forEach((s) => es.append(el('option', { value: s }, SEC_CORTO[s])));
+  es.addEventListener('change', (e) => { S.emi.sec = e.target.value; S.emi.n = 100; renderEmi(); });
+  $('emiMas').addEventListener('click', () => { S.emi.n += 200; renderEmi(); });
+  $('dicQ').addEventListener('input', () => renderDic());
+  if (R) { const sc = $('renCorte'); const ult = R.ultimo_dia.slice(0, 7); R.periodos.slice().reverse().forEach((p) => { if (R.riesgo['E|SISTEMA'].ytd_real[R.periodos.indexOf(p)] == null) return; sc.append(el('option', { value: p }, perLbl(p) + (p === ult ? ' (al ' + +R.ultimo_dia.slice(8) + ' de ' + MESES[+p.slice(5) - 1] + ')' : ''))); }); S.ren.corte = sc.options.length > 1 && sc.options[0].value === ult ? sc.options[1].value : (sc.options[0] || {}).value; sc.value = S.ren.corte; sc.addEventListener('change', () => { S.ren.corte = sc.value; renderRen(); }); }
+}
+function chips(id, opts, get, set) {
+  const c = $(id); c.textContent = '';
+  opts.forEach(([v, t]) => { const b = el('button', { 'aria-pressed': String(String(get()) === String(v)), 'data-v': v }, t); b.addEventListener('click', () => { set(v); [...c.children].forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.v === String(get())))); }); c.append(b); });
+}
+function syncChips(id, val) { [...$(id).children].forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.v === String(val)))); }
+
+// ---------- MAPA ----------
+const JER = { fondo: ['fondo', 'afp', 'seccion', 'grupo', 'instr', 'emisor'], afp: ['afp', 'fondo', 'seccion', 'grupo', 'instr', 'emisor'], seccion: ['seccion', 'grupo', 'instr', 'emisor'], clase: ['clase', 'subclase', 'instr', 'emisor'], emisor: ['emisor', 'instr'] };
+const NIVEL_NOMBRE = { fondo: 'Fondo', afp: 'AFP', seccion: 'Sección', grupo: 'Grupo', instr: 'Instrumento', emisor: 'Emisor', clase: 'Clase', subclase: 'Subclase' };
+const NIVEL_PLURAL = { fondo: 'fondos', afp: 'AFP', seccion: 'secciones', grupo: 'grupos', instr: 'instrumentos', emisor: 'emisores', clase: 'clases', subclase: 'subclases' };
+function hojaDims(m, r) {
+  const fila = B.c1.filas[r[2]];
+  const em = r[3] >= 0 ? m.emisores[r[3]] : r[3] === -1 ? '(sin detalle por emisor)' : '(diferencia con Cuadro 1)';
+  return { fondo: 'Fondo ' + B.fondos[r[0]], afp: B.afps[r[1]], seccion: fila.s, grupo: fila.g, instr: fila.l, emisor: em,
+    clase: fila.cl || 'Sin clasificar', subclase: fila.sc || 'Sin clasificar', _c: fila.c, _cl: fila.cl || 'Sin clasificar' };
+}
+function arbol(m) {
+  let dims = JER[S.mapa.jer].slice();
+  if (S.fondo !== 'ALL') dims = dims.filter((d) => d !== 'fondo');
+  if (S.afp !== 'ALL') dims = dims.filter((d) => d !== 'afp');
+  const fi = S.fondo === 'ALL' ? -1 : B.fondos.indexOf(S.fondo), ai = S.afp === 'ALL' ? -1 : B.afps.indexOf(S.afp);
+  const root = { name: 'Total', kids: new Map(), pos: 0, net: 0, n: 0, cls: {}, nivel: null };
+  for (const r of m.rows) {
+    if (fi >= 0 && r[0] !== fi) continue;
+    if (ai >= 0 && r[1] !== ai) continue;
+    const d = hojaDims(m, r); const v = r[5] || 0; const p = Math.max(0, v);
+    let node = root; node.pos += p; node.net += v; node.n++; node.cls[d._cl] = (node.cls[d._cl] || 0) + p;
+    for (const dim of dims) {
+      const nm = d[dim]; if (!nm) continue;
+      let ch = node.kids.get(nm);
+      if (!ch) { ch = { name: nm, kids: new Map(), pos: 0, net: 0, n: 0, cls: {}, nivel: dim, c: dim === 'instr' ? d._c : null, inf: 0, tieneInf: false }; node.kids.set(nm, ch); }
+      ch.pos += p; ch.net += v; ch.n++; ch.cls[d._cl] = (ch.cls[d._cl] || 0) + p;
+      if (r[6] != null) { ch.tieneInf = true; ch.inf += r[6]; } else ch.inf += v;
+      node = ch;
+    }
+  }
+  return root;
+}
+function dominante(n) { let b = 'Sin clasificar', bv = -1; for (const k in n.cls) if (n.cls[k] > bv) { bv = n.cls[k]; b = k; } if (bv <= 0 && n.net < 0) return 'Derivados'; return b; }
+function nodoActual(root) {
+  let n = root; const ok = [];
+  for (const nm of S.mapa.path) { const ch = n.kids.get(nm); if (!ch) break; ok.push(nm); n = ch; }
+  S.mapa.path = ok; return n;
+}
+function renderMapa() {
+  const pi = S.per, p = B.periodos[pi];
+  renderKpis();
+  leyenda('leyClases', CLASES.slice(0, 6).map((c) => ({ name: c, color: claseColor(c) })));
+  const m = MES[p];
+  if (!m) { $('treemap').style.opacity = 0.5; cargarMes(p).then(() => { $('treemap').style.opacity = 1; if (S.tab === 'mapa' && B.periodos[S.per] === p) renderMapa(); }).catch(errorCarga); return; }
+  const root = arbol(m); const nodo = nodoActual(root);
+  const totAct = totalSel(pi);
+  // migas
+  const mg = $('migas'); mg.textContent = '';
+  const raiz = (S.fondo === 'ALL' ? 'Todos los fondos' : 'Fondo ' + S.fondo) + (S.afp === 'ALL' ? '' : ' · ' + S.afp);
+  const crumbs = [raiz, ...S.mapa.path];
+  crumbs.forEach((c, i) => { if (i) mg.append(el('span', { class: 'sep' }, '›')); const b = el('button', null, c); b.addEventListener('click', () => { S.mapa.path = S.mapa.path.slice(0, i); renderMapa(); }); mg.append(b); });
+  // treemap data (2 niveles)
+  const bg = css('--panel');
+  const MAXK = 160;
+  function datos(n, prefijo, prof) {
+    const kids = [...n.kids.values()].filter((k) => k.pos > 0).sort((a, b) => b.pos - a.pos);
+    const shown = kids.slice(0, MAXK); const rest = kids.slice(MAXK);
+    const out = shown.map((k) => {
+      const col = claseColor(dominante(k)); const id = prefijo.concat([k.name]).join(SEP);
+      const o = { name: k.name, value: k.pos, id, _net: k.net, _n: k.n, _niv: k.nivel, _c: k.c, itemStyle: { color: col, borderColor: col }, label: { color: inkOn(col) }, upperLabel: { show: prof < 1 && k.kids.size > 0 && k.pos / (n.pos || 1) >= 0.04, color: inkOn(col) } };
+      if (prof >= 1) o.itemStyle.borderColor = bg;
+      if (prof < 1 && k.kids.size) o.children = datos(k, prefijo.concat([k.name]), prof + 1);
+      return o;
+    });
+    if (rest.length) { const pos = rest.reduce((s, k) => s + k.pos, 0), net = rest.reduce((s, k) => s + k.net, 0); const col = slot(0); out.push({ name: 'Otros (' + rest.length + ')', value: pos, id: prefijo.join(SEP) + SEP + '__otros', _net: net, _n: 0, _otros: true, itemStyle: { color: col }, label: { color: inkOn(col) } }); }
+    return out;
+  }
+  const data = datos(nodo, S.mapa.path, 0);
+  const ch = chart('treemap');
+  const ref = nodo.pos || 1;
+  ch.setOption({
+    animation: false,
+    textStyle: { fontFamily: css('--font-ui') },
+    tooltip: { backgroundColor: css('--panel'), borderColor: css('--line-2'), textStyle: { color: css('--ink'), fontSize: 12 }, confine: true,
+      formatter: (pa) => {
+        const d = pa.data; if (!d) return '';
+        const desc = d._c && B.codigos[d._c] ? '<br><span style="color:' + css('--muted') + '">' + esc(B.codigos[d._c].d) + '</span>' : '';
+        return '<b>' + fmtU(d._net, pi) + '</b> ' + uLbl() + '<br>' + esc(d.name) + desc + '<br><span style="color:' + css('--muted') + '">' + num(100 * d.value / ref, 1) + ' % del nivel · ' + (totAct ? num(100 * d._net / totAct, 2) + ' % del activo' : '') + '</span>';
+      } },
+    series: [{
+      type: 'treemap', data, roam: false, nodeClick: false, breadcrumb: { show: false }, width: '100%', height: '100%', top: 0, left: 0, sort: false,
+      visibleMin: 1, squareRatio: 0.7,
+      label: { show: true, fontSize: 12, overflow: 'truncate', minMargin: 2, formatter: (pa) => pa.data._otros ? pa.name : pa.name + '\n' + fmtU(pa.data._net, pi) },
+      upperLabel: { show: true, height: 20, fontSize: 12, fontWeight: 600, overflow: 'truncate', padding: [0, 0, 0, 5], formatter: (pa) => pa.name + '  ·  ' + fmtU(pa.data._net, pi) + ' ' + uLbl() },
+      itemStyle: { borderColor: bg, borderWidth: 1, gapWidth: 1 },
+      levels: [
+        { itemStyle: { borderColor: bg, borderWidth: 0, gapWidth: 3 }, upperLabel: { show: false } },
+        { itemStyle: { borderWidth: 2, gapWidth: 1 }, upperLabel: { show: true } },
+        { itemStyle: { borderColor: bg, borderWidth: 1, gapWidth: 0, borderColorSaturation: 0 }, upperLabel: { show: false } }
+      ]
+    }]
+  }, true);
+  ch.off('click');
+  ch.on('click', (pa) => { const d = pa.data; if (!d || d._otros) return; const path = d.id.split(SEP); let n = root; for (const x of path) { n = n && n.kids.get(x); } if (n && n.kids.size) { S.mapa.path = path; renderMapa(); } });
+  // tabla del nodo
+  const nivelHijos = nodo.kids.size ? [...nodo.kids.values()][0].nivel : null;
+  $('tabTitulo').textContent = S.mapa.path.length ? S.mapa.path[S.mapa.path.length - 1] : raiz;
+  $('tabSub').textContent = perLbl(p) + ' · ' + nodo.kids.size + ' ' + (nivelHijos ? (nodo.kids.size === 1 ? NIVEL_NOMBRE[nivelHijos].replace(/^(?!AFP)./, (c) => c.toLowerCase()) : NIVEL_PLURAL[nivelHijos]) : 'elementos') + ' · neto ' + fmtU(nodo.net, pi) + ' ' + uLbl() + (totAct ? ' (' + num(100 * nodo.net / totAct, 2) + ' % del activo de la selección)' : '');
+  const rows = [...nodo.kids.values()].map((k) => ({ name: k.name, net: k.net, pn: nodo.net ? 100 * k.net / nodo.net : null, pa: totAct ? 100 * k.net / totAct : null, n: k.n, c: k.c, k, inf: k.tieneInf ? k.inf : null }));
+  const cols = [
+    { k: 'name', t: NIVEL_NOMBRE[nivelHijos] || 'Nombre', fmt: (r) => r.c ? codBadge(r.name, corto(r.c)) : r.name, title: (r) => r.c && B.codigos[r.c] ? B.codigos[r.c].d : '' },
+    { k: 'net', t: uLbl(), n: true, neg: true, fmt: (r) => fmtU(r.net, pi) },
+    { k: 'pn', t: '% nivel', n: true, fmt: (r) => num(r.pn, 1) },
+    { k: 'pa', t: '% activo', n: true, fmt: (r) => num(r.pa, 2) }
+  ];
+  if ((nivelHijos === 'instr' || nivelHijos === 'emisor') && rows.some((r) => r.inf != null)) cols.push({ k: 'inf', t: 'Informado C21', n: true, fmt: (r) => r.inf == null ? '' : fmtU(r.inf, pi), title: () => 'Monto informado en el detalle (Cuadro 21) antes de conciliar con el Cuadro 1' });
+  tablaSort($('tablaNodo'), cols, rows, { sortK: 'net', onClick: (r) => { if (r.k.kids.size) { S.mapa.path = S.mapa.path.concat([r.name]); renderMapa(); } } });
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function serieSel(f = S.fondo, a = S.afp) { return B.c1.series[key(f, a)] || {}; }
+function sumaFilas(ser, pred, pi) { let s = 0; for (const ri in ser) { const fl = B.c1.filas[ri]; if (fl.t) continue; if (pred(fl)) { const v = ser[ri][pi]; if (v) s += v; } } return s; }
+function renderKpis() {
+  const pi = S.per; const t = totalSel(pi), t0 = pi > 0 ? totalSel(pi - 1) : null;
+  const ser = serieSel();
+  const ext = sumaFilas(ser, (f) => f.s === 'Extranjero', pi);
+  const der = sumaFilas(ser, (f) => f.cl === 'Derivados', pi);
+  const der0 = pi > 0 ? sumaFilas(ser, (f) => f.cl === 'Derivados', pi - 1) : null;
+  const k = $('kpis'); k.textContent = '';
+  const sel = (S.fondo === 'ALL' ? 'Todos los fondos' : 'Fondo ' + S.fondo) + (S.afp === 'ALL' ? '' : ' · ' + S.afp);
+  const card = (l, v, d) => k.append(el('div', { class: 'kpi' }, el('span', { class: 'l' }, l), el('span', { class: 'v' }, v), el('span', { class: 'd' }, d)));
+  const uu = S.unidad === 'pct' ? 'usd' : S.unidad;
+  card('Activos · ' + sel, fmtU(t, pi, uu) + ' ' + uLbl(uu), perLbl(B.periodos[pi]) + (B.tc[pi] ? ' · TC ' + num(B.tc[pi], 2) + ' $/US$' : ''));
+  card('Variación mensual de activos', t0 ? (t >= t0 ? '+' : '') + num(100 * (t / t0 - 1), 1) + ' %' : '—', t0 ? 'en dólares, vs ' + perLbl(B.periodos[pi - 1]) : '');
+  card('Inversión en el extranjero', t ? num(100 * ext / t, 1) + ' %' : '—', fmtU(ext, pi, uu) + ' ' + uLbl(uu));
+  card('Derivados, valor neto', t ? num(100 * der / t, 2) + ' %' : '—', fmtU(der, pi, uu) + ' ' + uLbl(uu) + (der0 != null ? ' · mes ant. ' + fmtU(der0, pi - 1, uu) : ''));
+}
+
+// ---------- EVOLUCIÓN ----------
+function gruposEvo() {
+  const g = S.evo.grupo; const ser = serieSel(); const out = new Map();
+  for (const ri in ser) {
+    const f = B.c1.filas[ri]; if (f.t) continue;
+    let nm;
+    if (g === 'seccion') nm = f.s;
+    else if (g === 'clase') nm = f.cl || 'Sin clasificar';
+    else { if (S.evo.dentro && f.s !== S.evo.dentro && f.cl !== S.evo.dentro) continue; nm = f.l + (S.evo.dentro ? '' : ' · ' + (SEC_CORTO[f.s] || f.s)); }
+    if (!out.has(nm)) out.set(nm, { name: nm, filas: [], vals: new Array(B.periodos.length).fill(0) });
+    const o = out.get(nm); o.filas.push(+ri);
+    ser[ri].forEach((v, i) => { if (v) o.vals[i] += v; });
+  }
+  let arr = [...out.values()];
+  const last = B.periodos.length - 1;
+  if (g === 'seccion') arr.sort((a, b) => SECCIONES.indexOf(a.name) - SECCIONES.indexOf(b.name));
+  else if (g === 'clase') arr.sort((a, b) => CLASES.indexOf(a.name) - CLASES.indexOf(b.name));
+  else {
+    arr.sort((a, b) => Math.abs(b.vals[last]) + Math.abs(b.vals[S.per]) - Math.abs(a.vals[last]) - Math.abs(a.vals[S.per]));
+    if (arr.length > 8) { const top = arr.slice(0, 7), rest = arr.slice(7); const o = { name: 'Otros (' + rest.length + ')', filas: rest.flatMap((x) => x.filas), vals: new Array(B.periodos.length).fill(0) }; rest.forEach((x) => x.vals.forEach((v, i) => { o.vals[i] += v; })); arr = top.concat([o]); }
+  }
+  return arr;
+}
+function colorGrupo(g, nm, i) {
+  if (g === 'clase') return claseColor(nm);
+  if (g === 'seccion') return slot((SECCIONES.indexOf(nm) % 8) + 1);
+  return /^Otros/.test(nm) ? slot(0) : slot((i % 8) + 1);
+}
+function renderEvo() {
+  const g = S.evo.grupo;
+  const dg = $('evoDentroG'); dg.hidden = g !== 'instr';
+  if (g === 'instr') {
+    const s = $('evoDentro');
+    if (!s.options.length) { s.append(el('option', { value: '' }, 'Toda la cartera')); SECCIONES.forEach((x) => s.append(el('option', { value: x }, 'Sección: ' + SEC_CORTO[x]))); CLASES.slice(0, 5).forEach((x) => s.append(el('option', { value: x }, 'Clase: ' + x))); }
+    s.value = S.evo.dentro;
+  }
+  const arr = gruposEvo(); const per = B.periodos; const tot = per.map((_, i) => totalSel(i));
+  const modo = S.evo.modo;
+  const sel = (S.fondo === 'ALL' ? 'Todos los fondos' : 'Fondo ' + S.fondo) + (S.afp === 'ALL' ? ', todas las AFP' : ', AFP ' + S.afp);
+  $('evoTitulo').textContent = 'Composición de la cartera · ' + sel;
+  const series = arr.map((o, i) => {
+    const col = colorGrupo(g, o.name, i);
+    return { name: o.name, type: 'line', stack: 'a', stackStrategy: 'samesign', symbol: 'none', smooth: false, lineStyle: { width: 0.8, color: css('--panel') },
+      areaStyle: { color: col, opacity: 0.92 }, itemStyle: { color: col }, emphasis: { focus: 'series' },
+      data: o.vals.map((v, i2) => modo === 'pct' ? (tot[i2] ? 100 * v / tot[i2] : null) : v) };
+  });
+  leyenda('evoLey', arr.map((o, i) => ({ name: g === 'seccion' ? SEC_CORTO[o.name] || o.name : o.name, color: colorGrupo(g, o.name, i) })));
+  const o = baseOpt();
+  o.xAxis.data = per.map(perCorto);
+  o.yAxis.axisLabel.formatter = (v) => modo === 'pct' ? v + ' %' : NF[0].format(v);
+  if (modo === 'pct') { o.yAxis.max = (v) => Math.min(100, Math.ceil(v.max)); }
+  o.tooltip.trigger = 'axis'; o.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o.tooltip.formatter = (ps) => { const i = ps[0].dataIndex; let h = '<b>' + perLbl(per[i]) + '</b>'; ps.slice().reverse().forEach((p) => { h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + (p.value == null ? '—' : modo === 'pct' ? num(p.value, 2) + ' %' : num(p.value, autoDec(p.value))) + '</b> ' + esc(p.seriesName); }); return h; };
+  o.series = series;
+  o.dataZoom = [{ type: 'inside' }];
+  o.markLine = null;
+  series.length && (series[0].markLine = { silent: true, symbol: 'none', label: { show: false }, lineStyle: { color: css('--accent'), width: 1, type: 'solid' }, data: [{ xAxis: S.per }] });
+  const ch = chart('evoChart'); ch.setOption(o, true);
+  ch.off('click'); ch.on('click', (pa) => { S.evo.foco = pa.seriesName; renderCmp(arr); });
+  if (!S.evo.foco || !arr.some((x) => x.name === S.evo.foco)) S.evo.foco = (arr.find((x) => x.name === 'Extranjero') || arr.find((x) => x.name === 'Derivados') || arr[0] || {}).name;
+  renderCmp(arr); renderTot();
+}
+function renderCmp(arr) {
+  const g = arr.find((x) => x.name === S.evo.foco); if (!g) return;
+  const per = B.periodos; const filas = new Set(g.filas);
+  $('cmpTitulo').textContent = 'Comparación entre AFP · ' + (SEC_CORTO[g.name] || g.name);
+  $('cmpSub').textContent = '% del activo de ' + (S.fondo === 'ALL' ? 'todos los fondos' : 'el Fondo ' + S.fondo) + ' de cada AFP. Cambie la serie haciendo clic en el gráfico de composición.';
+  const series = B.afps.map((a, i) => {
+    const ser = serieSel(S.fondo, a);
+    const vals = per.map((_, pi) => { const t = totalSel(pi, S.fondo, a); if (!t) return null; let s = 0; filas.forEach((ri) => { const v = ser[ri] && ser[ri][pi]; if (v) s += v; }); return 100 * s / t; });
+    const col = slot(i + 1);
+    return { name: a, type: 'line', symbol: 'none', lineStyle: { width: S.afp === a ? 3 : 1.6, color: col }, itemStyle: { color: col }, data: vals, emphasis: { focus: 'series' } };
+  });
+  leyenda('cmpLey', B.afps.map((a, i) => ({ name: a, color: slot(i + 1), line: true })));
+  const o = baseOpt(); o.xAxis.data = per.map(perCorto); o.yAxis.axisLabel.formatter = (v) => v + ' %';
+  o.tooltip.trigger = 'axis'; o.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o.tooltip.formatter = (ps) => { const i = ps[0].dataIndex; let h = '<b>' + perLbl(per[i]) + '</b>'; ps.slice().sort((a, b) => (b.value ?? -1e9) - (a.value ?? -1e9)).forEach((p) => { h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + (p.value == null ? '—' : num(p.value, 2) + ' %') + '</b> ' + p.seriesName; }); return h; };
+  o.series = series; o.dataZoom = [{ type: 'inside' }];
+  chart('cmpChart').setOption(o, true);
+}
+function renderTot() {
+  const per = B.periodos;
+  const series = B.fondos.map((f, i) => ({ name: 'Fondo ' + f, type: 'line', symbol: 'none', lineStyle: { width: S.fondo === f ? 3 : 1.6, color: slot(i + 1) }, itemStyle: { color: slot(i + 1) }, data: per.map((_, pi) => totalSel(pi, f, S.afp)) }));
+  leyenda('totLey', B.fondos.map((f, i) => ({ name: 'Fondo ' + f, color: slot(i + 1), line: true })));
+  $('totSub').textContent = 'MMUS$ al cierre de cada mes' + (S.afp === 'ALL' ? ', sistema' : ', AFP ' + S.afp) + '. Cuadro Nº 1.';
+  const o = baseOpt(); o.xAxis.data = per.map(perCorto); o.yAxis.axisLabel.formatter = (v) => NF[0].format(v);
+  o.tooltip.trigger = 'axis'; o.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o.tooltip.formatter = (ps) => { const i = ps[0].dataIndex; let h = '<b>' + perLbl(per[i]) + '</b>'; ps.forEach((p) => { h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + num(p.value, 0) + '</b> ' + p.seriesName; }); return h; };
+  o.series = series; o.dataZoom = [{ type: 'inside' }];
+  chart('totChart').setOption(o, true);
+}
+
+// ---------- DERIVADOS ----------
+let SWI = null, FWI = null;
+function indexar() {
+  SWI = B.periodos.map(() => []); for (const r of B.swaps.rows) SWI[r[0]].push(r);
+  FWI = B.periodos.map(() => []); for (const r of B.forwards.rows) FWI[r[0]].push(r);
+}
+function pasaFA(r) { if (S.fondo !== 'ALL' && B.fondos[r[1]] !== S.fondo) return false; if (S.afp !== 'ALL' && B.afps[r[2]] !== S.afp) return false; return true; }
+function familiaDer(f) { const m = (B.codigos[f.c] || {}).m || ''; return (f.sc || 'Derivados') + ' ' + (m === 'Nacional' ? 'nacionales' : m === 'Extranjero' ? 'extranjeros' : ''); }
+function renderDer() {
+  ['resumen', 'swaps', 'sens', 'fwd'].forEach((v) => { $('dv-' + v).hidden = S.der.vista !== v; });
+  syncChips('derVista', S.der.vista);
+  $('derAvisoTodos').hidden = S.fondo !== 'ALL';
+  if (!SWI) indexar();
+  if (S.der.vista === 'resumen') renderDerResumen();
+  else if (S.der.vista === 'swaps') renderSwaps();
+  else if (S.der.vista === 'sens') renderSens();
+  else renderFwd();
+}
+function renderDerResumen() {
+  const per = B.periodos; const ser = serieSel(); const fams = new Map();
+  for (const ri in ser) { const f = B.c1.filas[ri]; if (f.t || f.cl !== 'Derivados') continue; const fm = familiaDer(f); if (!fams.has(fm)) fams.set(fm, new Array(per.length).fill(0)); const a = fams.get(fm); ser[ri].forEach((v, i) => { if (v) a[i] += v; }); }
+  const orden = ['Swaps extranjeros', 'Swaps nacionales', 'Forwards extranjeros', 'Forwards nacionales'];
+  const names = [...fams.keys()].sort((a, b) => (orden.indexOf(a) + 99 * (orden.indexOf(a) < 0)) - (orden.indexOf(b) + 99 * (orden.indexOf(b) < 0)));
+  const tot = per.map((_, i) => totalSel(i));
+  const colFam = (n) => slot({ 'Swaps extranjeros': 8, 'Swaps nacionales': 2, 'Forwards extranjeros': 1, 'Forwards nacionales': 3 }[n] || 7);
+  const series = names.map((n) => ({ name: n, type: 'bar', stack: 'd', stackStrategy: 'samesign', barMaxWidth: 10, itemStyle: { color: colFam(n), borderRadius: 0 }, data: fams.get(n).map((v, i) => tot[i] ? 100 * v / tot[i] : null) }));
+  const neto = per.map((_, i) => { let s = 0; names.forEach((n) => { s += fams.get(n)[i]; }); return tot[i] ? 100 * s / tot[i] : null; });
+  series.push({ name: 'Neto total', type: 'line', symbol: 'circle', symbolSize: 4, lineStyle: { width: 2, color: css('--ink') }, itemStyle: { color: css('--ink') }, data: neto, z: 5 });
+  leyenda('resLey', names.map((n) => ({ name: n, color: colFam(n) })).concat([{ name: 'Neto total', color: css('--ink'), line: true }]));
+  const sel = (S.fondo === 'ALL' ? 'todos los fondos' : 'Fondo ' + S.fondo) + (S.afp === 'ALL' ? ', todas las AFP' : ', AFP ' + S.afp);
+  $('resSub').textContent = '% del activo · ' + sel + '. Suma de las líneas de derivados del Cuadro Nº 1. Valores negativos: pérdida latente frente a las contrapartes.';
+  const o = baseOpt(); o.xAxis.data = per.map(perCorto); o.yAxis.axisLabel.formatter = (v) => num(v, 1) + ' %';
+  o.tooltip.trigger = 'axis'; o.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o.tooltip.formatter = (ps) => { const i = ps[0].dataIndex; let h = '<b>' + perLbl(per[i]) + '</b>'; ps.forEach((p) => { h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + (p.value == null ? '—' : num(p.value, 2) + ' %') + '</b> ' + p.seriesName; }); return h; };
+  o.series = series; o.dataZoom = [{ type: 'inside' }];
+  series[0] && (series[0].markLine = { silent: true, symbol: 'none', label: { show: false }, lineStyle: { color: css('--accent'), width: 1 }, data: [{ xAxis: S.per }] });
+  chart('resChart').setOption(o, true);
+  // tabla del mes
+  const pi = S.per; const rows = [];
+  for (const ri in ser) { const f = B.c1.filas[ri]; if (f.t || f.cl !== 'Derivados') continue; const v = ser[ri][pi]; const v0 = pi > 0 ? ser[ri][pi - 1] : null; if (!v && !v0) continue; rows.push({ cod: f.l, c: f.c, fam: familiaDer(f), sec: SEC_CORTO[f.s] || f.s, v: v || 0, pct: tot[pi] ? 100 * (v || 0) / tot[pi] : null, dv: (v || 0) - (v0 || 0) }); }
+  $('resTabTit').textContent = 'Derivados de ' + perLbl(per[pi]);
+  tablaSort($('resTabla'), [
+    { k: 'cod', t: 'Código', fmt: (r) => codBadge(r.cod, B.codigos[r.c] ? B.codigos[r.c].d : '') },
+    { k: 'fam', t: 'Familia' },
+    { k: 'v', t: uLbl(), n: true, neg: true, fmt: (r) => fmtU(r.v, pi) },
+    { k: 'pct', t: '% activo', n: true, neg: true, fmt: (r) => num(r.pct, 2) },
+    { k: 'dv', t: 'Var. mes', n: true, neg: true, fmt: (r) => (r.dv > 0 ? '+' : '') + fmtU(r.dv, pi) }
+  ], rows, { sortK: 'v' });
+  $('resTabla')._sort.dir = 1;
+}
+function renderSwaps() {
+  const per = B.periodos; const pi = S.per;
+  const cods = [...new Set(B.swaps.rows.map((r) => r[3]))].sort();
+  const etiq = { SNT: 'SNT · nac. tasas', SNM: 'SNM · nac. moneda', YSNT: 'YSNT · nac. tasas c/garantía', YSNM: 'YSNM · nac. moneda c/garantía', SET: 'SET · ext. tasas', SEM: 'SEM · ext. moneda', YSET: 'YSET · ext. tasas c/garantía', YSEM: 'YSEM · ext. moneda c/garantía', SNI: 'SNI', SEI: 'SEI' };
+  chips('swCod', [['ALL', 'Todos'], ...cods.map((c) => [c, etiq[c] || c])], () => S.der.cod, (v) => { S.der.cod = v; renderSwaps(); });
+  const cod = S.der.cod; const okC = (r) => cod === 'ALL' || r[3] === cod;
+  const desc = cod === 'ALL' ? 'todos los swaps' : (B.codigos[cod] ? B.codigos[cod].d.replace(/\.$/, '') : cod);
+  const sel = (S.fondo === 'ALL' ? 'todos los fondos' : 'Fondo ' + S.fondo);
+  $('swTit').textContent = 'Valorización de swaps · ' + sel;
+  $('swSub').textContent = desc + '. Valor de mercado (MtM) del contrato, MMUS$, por AFP. Cuadros Nº 26 y 28.';
+  // barras apiladas por AFP
+  const afps = S.afp === 'ALL' ? B.afps : [S.afp];
+  const mat = afps.map(() => new Array(per.length).fill(0));
+  SWI.forEach((rows, p) => { for (const r of rows) { if (!okC(r) || !pasaFA(r)) continue; const ai = afps.indexOf(B.afps[r[2]]); if (ai >= 0) mat[ai][p] += r[6]; } });
+  const colA = (a) => slot(B.afps.indexOf(a) + 1);
+  const series = afps.map((a, i) => ({ name: a, type: 'bar', stack: 's', stackStrategy: 'samesign', barMaxWidth: 10, itemStyle: { color: colA(a) }, data: mat[i].map((v) => Math.round(v * 100) / 100) }));
+  const neto = per.map((_, p) => mat.reduce((s, r) => s + r[p], 0));
+  series.push({ name: 'Neto', type: 'line', symbol: 'circle', symbolSize: 4, lineStyle: { width: 2, color: css('--ink') }, itemStyle: { color: css('--ink') }, data: neto.map((v) => Math.round(v * 100) / 100), z: 5 });
+  series[0].markLine = { silent: true, symbol: 'none', label: { show: false }, lineStyle: { color: css('--accent'), width: 1 }, data: [{ xAxis: pi }] };
+  leyenda('swLey', afps.map((a) => ({ name: a, color: colA(a) })).concat([{ name: 'Neto', color: css('--ink'), line: true }]));
+  const o = baseOpt(); o.xAxis.data = per.map(perCorto); o.yAxis.axisLabel.formatter = (v) => NF[0].format(v);
+  o.tooltip.trigger = 'axis'; o.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o.tooltip.formatter = (ps) => { const i = ps[0].dataIndex; let h = '<b>' + perLbl(per[i]) + '</b> · MMUS$'; ps.forEach((p) => { if (!p.value && p.seriesName !== 'Neto') return; h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + num(p.value, 1) + '</b> ' + p.seriesName; }); return h; };
+  o.series = series; o.dataZoom = [{ type: 'inside' }];
+  chart('swChart').setOption(o, true);
+  // % del fondo por AFP
+  const sp = afps.map((a, i) => ({ name: a, type: 'line', symbol: 'none', lineStyle: { width: 1.8, color: colA(a) }, itemStyle: { color: colA(a) }, data: per.map((_, p) => { const t = totalSel(p, S.fondo, a); return t ? Math.round(10000 * mat[i][p] / t) / 100 : null; }) }));
+  leyenda('swPctLey', afps.map((a) => ({ name: a, color: colA(a), line: true })));
+  const o2 = baseOpt(); o2.xAxis.data = per.map(perCorto); o2.yAxis.axisLabel.formatter = (v) => num(v, 1) + ' %';
+  o2.tooltip.trigger = 'axis'; o2.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o2.tooltip.formatter = (ps) => { const i = ps[0].dataIndex; let h = '<b>' + perLbl(per[i]) + '</b>'; ps.slice().sort((a, b) => (a.value ?? 0) - (b.value ?? 0)).forEach((p) => { h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + (p.value == null ? '—' : num(p.value, 2) + ' %') + '</b> ' + p.seriesName; }); return h; };
+  o2.series = sp; o2.dataZoom = [{ type: 'inside' }];
+  chart('swPctChart').setOption(o2, true);
+  // tabla contrapartes del mes
+  const agg = new Map();
+  const add = (p, sign) => { for (const r of SWI[p] || []) { if (!okC(r) || !pasaFA(r)) continue; const k = r[4] + '|' + r[5] + '|' + (cod === 'ALL' ? r[3] : ''); if (!agg.has(k)) agg.set(k, { cp: B.swaps.contrapartes[r[4]], u: r[5], cod: r[3], tot: 0, ant: 0, por: {} }); const o3 = agg.get(k); if (sign) { o3.tot += r[6]; o3.por[B.afps[r[2]]] = (o3.por[B.afps[r[2]]] || 0) + r[6]; } else o3.ant += r[6]; } };
+  add(pi, true); if (pi > 0) add(pi - 1, false);
+  const rows = [...agg.values()].filter((r) => Math.abs(r.tot) > 0.004 || Math.abs(r.ant) > 0.004).map((r) => Object.assign(r, { dv: r.tot - r.ant }));
+  $('swTabTit').textContent = 'Contrapartes · ' + perLbl(per[pi]);
+  const cols = [{ k: 'cp', t: 'Contraparte' }, { k: 'u', t: 'Unidad' }];
+  if (cod === 'ALL') cols.push({ k: 'cod', t: 'Tipo', fmt: (r) => codBadge(r.cod) });
+  const afpsCon = afps.filter((a) => rows.some((r) => r.por[a]));
+  if (afps.length > 1) afpsCon.forEach((a) => cols.push({ k: 'a_' + a, t: a.charAt(0) + a.slice(1).toLowerCase(), n: true, sv: (r) => r.por[a] || 0, fmt: (r) => r.por[a] ? num(r.por[a], 1) : '', neg: false }));
+  cols.push({ k: 'tot', t: 'Total', n: true, neg: true, fmt: (r) => num(r.tot, 2) }, { k: 'dv', t: 'Var. mes', n: true, neg: true, fmt: (r) => (r.dv > 0 ? '+' : '') + num(r.dv, 2) });
+  const tb = $('swTabla'); if (!tb._sort) tb._sort = { k: 'tot', dir: 1 };
+  tablaSort(tb, cols, rows, { sortK: 'tot' });
+}
+function renderFwd() {
+  const per = B.periodos; const pi = S.per; const mons = B.forwards.monedas;
+  const ok = (r) => r[3] === S.der.orig && pasaFA(r) && (S.der.sent === 'todos' || r[5].slice(-1) === S.der.sent);
+  // top monedas objeto (por nocional del mes)
+  const sum = new Map(); for (const r of FWI[pi]) if (ok(r)) sum.set(r[4], (sum.get(r[4]) || 0) + r[7]);
+  let top = [...sum.entries()].sort((a, b) => b[1] - a[1]).slice(0, 7).map((x) => x[0]);
+  if (!top.length) { const s2 = new Map(); FWI.forEach((rows) => rows.forEach((r) => { if (ok(r)) s2.set(r[4], (s2.get(r[4]) || 0) + r[7]); })); top = [...s2.entries()].sort((a, b) => b[1] - a[1]).slice(0, 7).map((x) => x[0]); }
+  const mat = top.map(() => new Array(per.length).fill(0)); const otras = new Array(per.length).fill(0);
+  FWI.forEach((rows, p) => { for (const r of rows) { if (!ok(r)) continue; const i = top.indexOf(r[4]); if (i >= 0) mat[i][p] += r[7]; else otras[p] += r[7]; } });
+  const series = top.map((m, i) => ({ name: mons[m], type: 'bar', stack: 'f', barMaxWidth: 10, itemStyle: { color: slot(i + 1) }, data: mat[i].map((v) => Math.round(v)) }));
+  if (otras.some((v) => v)) series.push({ name: 'Otras monedas', type: 'bar', stack: 'f', barMaxWidth: 10, itemStyle: { color: slot(0) }, data: otras.map((v) => Math.round(v)) });
+  series[0] && (series[0].markLine = { silent: true, symbol: 'none', label: { show: false }, lineStyle: { color: css('--accent'), width: 1 }, data: [{ xAxis: pi }] });
+  leyenda('fwLey', series.map((s) => ({ name: s.name, color: s.itemStyle.color })));
+  $('fwSub').textContent = (S.der.orig ? 'Forwards extranjeros (Cuadro Nº 24)' : 'Forwards nacionales (Cuadro Nº 22)') + ' · ' + (S.fondo === 'ALL' ? 'todos los fondos' : 'Fondo ' + S.fondo) + (S.afp === 'ALL' ? '' : ', AFP ' + S.afp) + '. Nocional en MMUS$ por moneda objeto.';
+  const o = baseOpt(); o.xAxis.data = per.map(perCorto); o.yAxis.axisLabel.formatter = (v) => NF[0].format(v);
+  o.tooltip.trigger = 'axis'; o.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o.tooltip.formatter = (ps) => { const i = ps[0].dataIndex; let h = '<b>' + perLbl(per[i]) + '</b> · MMUS$'; ps.slice().reverse().forEach((p) => { if (!p.value) return; h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + num(p.value, 0) + '</b> ' + esc(p.seriesName); }); return h; };
+  o.series = series; o.dataZoom = [{ type: 'inside' }];
+  chart('fwChart').setOption(o, true);
+  const agg = new Map();
+  for (const r of FWI[pi]) { if (!ok(r)) continue; const k = r[4] + '|' + r[5] + '|' + r[6]; if (!agg.has(k)) agg.set(k, { mo: mons[r[4]], cod: r[5], mc: mons[r[6]], v: 0 }); agg.get(k).v += r[7]; }
+  $('fwTabTit').textContent = 'Forwards de ' + perLbl(per[pi]);
+  tablaSort($('fwTabla'), [{ k: 'mo', t: 'Moneda objeto' }, { k: 'cod', t: 'Código', fmt: (r) => codBadge(r.cod) }, { k: 'mc', t: 'Moneda contraparte' }, { k: 'v', t: 'Nocional MMUS$', n: true, fmt: (r) => num(r.v, 1) }], [...agg.values()], { sortK: 'v' });
+}
+
+// ---------- EMISORES ----------
+function renderEmi() {
+  const pi = S.per, p = B.periodos[pi]; const m = MES[p];
+  if (!m) { $('emiCuenta').textContent = 'Cargando ' + perLbl(p) + '…'; cargarMes(p).then(() => { if (S.tab === 'emi') renderEmi(); }).catch(errorCarga); return; }
+  const fi = S.fondo === 'ALL' ? -1 : B.fondos.indexOf(S.fondo), ai = S.afp === 'ALL' ? -1 : B.afps.indexOf(S.afp);
+  const q = S.emi.q.trim().toUpperCase(); const agr = S.emi.agr; const totAct = totalSel(pi);
+  const map = new Map();
+  for (const r of m.rows) {
+    if (r[3] < 0) continue;
+    if (fi >= 0 && r[0] !== fi) continue; if (ai >= 0 && r[1] !== ai) continue;
+    const fl = B.c1.filas[r[2]]; if (S.emi.sec && fl.s !== S.emi.sec) continue;
+    const em = m.emisores[r[3]]; if (q && em.toUpperCase().indexOf(q) < 0) continue;
+    const mon = r[4] >= 0 ? m.monedas[r[4]] : '';
+    const k = agr === 'e' ? em : agr === 'ei' ? em + SEP + fl.l : em + SEP + fl.l + SEP + mon;
+    if (!map.has(k)) map.set(k, { em, ins: new Set(), sec: new Set(), mon: new Set(), v: 0, fa: new Set() });
+    const o = map.get(k); o.ins.add(fl.l); o.sec.add(SEC_CORTO[fl.s] || fl.s); if (mon) mon.split(/\s+/).forEach((x) => x && o.mon.add(x)); o.v += r[5]; o.fa.add(r[0] + '-' + r[1]);
+  }
+  const rows = [...map.values()].map((o) => ({ em: o.em, ins: [...o.ins].join(', '), sec: [...o.sec].join(', '), mon: [...o.mon].join(' '), v: o.v, pa: totAct ? 100 * o.v / totAct : null, n: o.fa.size }));
+  rows.sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
+  $('emiCuenta').textContent = rows.length + ' filas · ' + perLbl(p);
+  $('emiMas').hidden = rows.length <= S.emi.n;
+  tablaSort($('emiTabla'), [
+    { k: 'em', t: 'Emisor / contraparte' }, { k: 'ins', t: 'Instrumento' }, { k: 'sec', t: 'Sección' }, { k: 'mon', t: 'Moneda' },
+    { k: 'v', t: uLbl(), n: true, neg: true, fmt: (r) => fmtU(r.v, pi) }, { k: 'pa', t: '% activo', n: true, neg: true, fmt: (r) => num(r.pa, 3) },
+    { k: 'n', t: 'Fondo·AFP', n: true }
+  ], rows, { sortK: 'v', limite: S.emi.n, onClick: (r) => { S.emi.sel = r.em; renderHist(); }, isSel: (r) => r.em === S.emi.sel });
+}
+let histToken = 0;
+async function renderHist() {
+  const em = S.emi.sel; if (!em) return;
+  const tok = ++histToken; const panel = $('histPanel'); panel.hidden = false;
+  $('histTit').textContent = 'Historia · ' + em;
+  const porFondo = S.fondo === 'ALL';
+  $('histSub').textContent = 'Exposición mensual en MMUS$ ' + (porFondo ? 'por tipo de fondo' : 'por AFP, Fondo ' + S.fondo) + (S.afp !== 'ALL' && porFondo ? ', AFP ' + S.afp : '') + '. Valores conciliados con el Cuadro Nº 1.';
+  const prog = $('histProg'); prog.hidden = false; const bar = prog.firstElementChild;
+  const per = B.periodos; let hechos = 0;
+  for (const p of per) { if (tok !== histToken) return; try { await cargarMes(p); } catch (e) {} hechos++; bar.style.width = (100 * hechos / per.length) + '%'; }
+  prog.hidden = true; if (tok !== histToken) return;
+  const fi = S.fondo === 'ALL' ? -1 : B.fondos.indexOf(S.fondo), ai = S.afp === 'ALL' ? -1 : B.afps.indexOf(S.afp);
+  const grupos = porFondo ? B.fondos : B.afps;
+  const mat = grupos.map(() => new Array(per.length).fill(0));
+  per.forEach((p, pi) => { const m = MES[p]; if (!m) return; const ei = m.emisores.indexOf(em); if (ei < 0) return; for (const r of m.rows) { if (r[3] !== ei) continue; if (fi >= 0 && r[0] !== fi) continue; if (ai >= 0 && r[1] !== ai) continue; const fl = B.c1.filas[r[2]]; if (S.emi.sec && fl.s !== S.emi.sec) continue; mat[porFondo ? r[0] : r[1]][pi] += r[5]; } });
+  const series = grupos.map((g, i) => ({ name: porFondo ? 'Fondo ' + g : g, type: 'bar', stack: 'h', stackStrategy: 'samesign', barMaxWidth: 10, itemStyle: { color: slot(i + 1) }, data: mat[i].map((v) => Math.round(v * 100) / 100) })).filter((s) => s.data.some((v) => v));
+  leyenda('histLey', series.map((s) => ({ name: s.name, color: s.itemStyle.color })));
+  const o = baseOpt(); o.xAxis.data = per.map(perCorto); o.yAxis.axisLabel.formatter = (v) => NF[0].format(v);
+  o.tooltip.trigger = 'axis'; o.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o.tooltip.formatter = (ps) => { const i = ps[0].dataIndex; let h = '<b>' + perLbl(per[i]) + '</b> · MMUS$'; let t = 0; ps.forEach((p) => { if (!p.value) return; t += p.value; h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + num(p.value, 1) + '</b> ' + p.seriesName; }); return h + '<br>Total <b>' + num(t, 1) + '</b>'; };
+  o.series = series; o.dataZoom = [{ type: 'inside' }];
+  chart('histChart').setOption(o, true);
+  panel.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+}
+
+// ---------- RENTABILIDAD ----------
+const MET = [
+  ['ytd_real', 'Año a la fecha', 2], ['r12_real', '12 meses', 2], ['r36_real_anual', '36 m anual', 2], ['r60_real_anual', '60 m anual', 2],
+  ['vol_anual_12m', 'Volatilidad anual', 2], ['var95_1d', 'VaR 95 % 1 día', 2], ['cvar95_1d', 'CVaR 95 % 1 día', 2],
+  ['var99_1d', 'VaR 99 % 1 día', 2], ['cvar99_1d', 'CVaR 99 % 1 día', 2], ['max_drawdown_36m', 'Caída máx. 36 m', 2]];
+function renVal(k, m, pi) { const r = R.riesgo[k]; return r && r[m] ? r[m][pi] : null; }
+function pctTxt(v, d = 2, signo = false) { return v == null ? '—' : (signo && v > 0 ? '+' : '') + num(100 * v, d) + ' %'; }
+function renderRen() {
+  $('renFalta').hidden = !!R; if (!R) return;
+  const pc = S.ren.corte; const pi = R.periodos.indexOf(pc);
+  const f = S.fondo === 'ALL' ? 'E' : S.fondo; const a = S.afp === 'ALL' ? 'SISTEMA' : S.afp; const k = f + '|' + a;
+  $('renNota').textContent = 'Valor cuota diario SP hasta el ' + R.ultimo_dia.split('-').reverse().join('-') + '. ' + (S.fondo === 'ALL' ? 'Con «Todos» se muestra el Fondo E y la tabla compara los cinco fondos.' : '');
+  const kp = $('renKpis'); kp.textContent = '';
+  const card = (l, v, d) => kp.append(el('div', { class: 'kpi' }, el('span', { class: 'l' }, l), el('span', { class: 'v' + (/^-/.test(v) ? ' neg' : '') }, v), el('span', { class: 'd' }, d)));
+  const sel = 'Fondo ' + f + ' · ' + (a === 'SISTEMA' ? 'sistema' : a);
+  card('Rentabilidad real año a la fecha · ' + sel, pctTxt(renVal(k, 'ytd_real', pi), 2, true), 'al cierre de ' + perLbl(pc));
+  card('Últimos 12 meses (real)', pctTxt(renVal(k, 'r12_real', pi), 2, true), '36 m: ' + pctTxt(renVal(k, 'r36_real_anual', pi), 2, true) + ' anual · 60 m: ' + pctTxt(renVal(k, 'r60_real_anual', pi), 2, true) + ' anual');
+  card('VaR 95 % a 1 día', pctTxt(renVal(k, 'var95_1d', pi)), 'CVaR 95 %: ' + pctTxt(renVal(k, 'cvar95_1d', pi)) + ' · VaR 99 %: ' + pctTxt(renVal(k, 'var99_1d', pi)));
+  card('Volatilidad anual (12 m)', pctTxt(renVal(k, 'vol_anual_12m', pi)), 'caída máxima en 36 meses: ' + pctTxt(renVal(k, 'max_drawdown_36m', pi)));
+  // tabla
+  const filas = S.fondo === 'ALL' ? B.fondos.map((x) => ({ n: 'Fondo ' + x, k: x + '|' + (S.afp === 'ALL' ? 'SISTEMA' : S.afp) })) : B.afps.concat(['SISTEMA']).map((x) => ({ n: x === 'SISTEMA' ? 'Sistema' : x, k: S.fondo + '|' + x }));
+  const rows = filas.map((o) => { const r = { n: o.n, k: o.k }; MET.forEach(([m]) => { r[m] = renVal(o.k, m, pi); }); return r; });
+  $('renTabTit').textContent = 'Rentabilidad real y riesgo · ' + perLbl(pc) + (S.fondo === 'ALL' ? ' · por tipo de fondo' : ' · Fondo ' + S.fondo + ' por AFP');
+  tablaSort($('renTabla'), [{ k: 'n', t: S.fondo === 'ALL' ? 'Fondo' : 'AFP' }].concat(MET.map(([m, t, d]) => ({ k: m, t, n: true, neg: /real/.test(m), fmt: (r) => r[m] == null ? '—' : num(100 * r[m], d) }))), rows, { sortK: null, isSel: (r) => r.k === k });
+  // trayectoria del año (índice diario real)
+  const y = pc.slice(0, 4); const fd = R.fechas_diarias; const i0 = fd.findIndex((x) => x > (+y - 1) + '-12-30'); const i1 = (() => { let j = -1; fd.forEach((x, i) => { if (x.slice(0, 4) === y) j = i; }); return j; })();
+  const base0 = fd.lastIndexOf(fd.filter((x) => x <= (+y - 1) + '-12-31').slice(-1)[0]);
+  const lineas = S.fondo === 'ALL' ? B.fondos.map((x, i) => ({ n: 'Fondo ' + x, k: x + '|' + a, c: slot(i + 1) })) : B.afps.map((x, i) => ({ n: x, k: f + '|' + x, c: slot(i + 1) })).concat([{ n: 'Sistema', k: f + '|SISTEMA', c: css('--ink') }]);
+  const xs = fd.slice(Math.max(base0, 0), i1 + 1);
+  const ser = lineas.map((o) => { const arr = R.diario[o.k] || []; const b = arr[base0]; let last = null; return { name: o.n, type: 'line', symbol: 'none', lineStyle: { width: o.n === 'Sistema' || o.k === k ? 2.6 : 1.4, color: o.c }, itemStyle: { color: o.c }, data: xs.map((_, j) => { const v = arr[base0 + j]; if (v != null) last = v; return b && last ? Math.round(10000 * last / b) / 100 : null; }) }; });
+  $('renYtdTit').textContent = 'Trayectoria de ' + y + (S.fondo === 'ALL' ? ' · por fondo' : ' · Fondo ' + f);
+  $('renYtdSub').textContent = 'Índice real diario (valor cuota / UF), 31 de diciembre de ' + (+y - 1) + ' = 100. Hasta ' + xs[xs.length - 1] + '.';
+  leyenda('renYtdLey', lineas.map((o) => ({ name: o.n, color: o.c, line: true })));
+  const o = baseOpt(); o.xAxis.data = xs.map((x) => +x.slice(8) + ' ' + MESES[+x.slice(5, 7) - 1]); o.yAxis.scale = true;
+  o.tooltip.trigger = 'axis'; o.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o.tooltip.formatter = (ps) => { let h = '<b>' + xs[ps[0].dataIndex] + '</b>'; ps.slice().sort((p1, p2) => (p2.value ?? 0) - (p1.value ?? 0)).forEach((p) => { h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + (p.value == null ? '—' : num(p.value - 100, 2) + ' %') + '</b> ' + p.seriesName; }); return h; };
+  o.series = ser; o.dataZoom = [{ type: 'inside' }];
+  chart('renYtdChart').setOption(o, true);
+  // mensual
+  const per = R.periodos; const j1 = pi; const j0 = Math.max(0, pi - 35); const arr = R.series[k] || [];
+  const xs2 = per.slice(j0, j1 + 1); const vals = arr.slice(j0, j1 + 1).map((v) => v == null ? null : Math.round(10000 * v) / 100);
+  $('renMesTit').textContent = 'Rentabilidad real mensual · ' + sel;
+  const o2 = baseOpt(); o2.xAxis.data = xs2.map(perCorto); o2.yAxis.axisLabel.formatter = (v) => num(v, 1) + ' %';
+  o2.tooltip.trigger = 'axis'; o2.tooltip.formatter = (ps) => '<b>' + perLbl(xs2[ps[0].dataIndex]) + '</b><br><b>' + (ps[0].value == null ? '—' : num(ps[0].value, 2) + ' %') + '</b> real';
+  o2.series = [{ type: 'bar', barMaxWidth: 14, data: vals.map((v) => ({ value: v, itemStyle: { color: v < 0 ? slot(8) : slot(1), borderRadius: v < 0 ? [0, 0, 3, 3] : [3, 3, 0, 0] } })) }];
+  chart('renMesChart').setOption(o2, true);
+}
+
+// ---------- DERIVADOS: swaps de tasas extranjeros, quién y cuánto ----------
+function renderSens() {
+  if (!R) { $('sensSub').textContent = 'Faltan datos (datos/rentab.js).'; return; }
+  const ini = R.swaps_inicio.slice().sort((x, y) => String(x.primer_mes).localeCompare(String(y.primer_mes)));
+  tablaSort($('iniTabla'), [{ k: 'orden', t: 'Orden', n: true }, { k: 'afp', t: 'AFP' }, { k: 'primer_mes', t: 'Primer mes', fmt: (r) => r.primer_mes ? perLbl(r.primer_mes) + (r.primer_mes === B.periodos[0] ? ' o antes' : '') : '—' }].concat(B.fondos.map((f) => ({ k: f, t: 'Fondo ' + f, fmt: (r) => r[f] ? perCorto(r[f]) : '—' }))),
+    ini.map((r, i) => Object.assign({ orden: i + 1 }, r)), { sortK: null });
+  const f = S.fondo === 'ALL' ? 'TOTAL' : S.fondo; const per = B.periodos; const pidx = {}; per.forEach((p, i) => { pidx[p] = i; });
+  const pct = {}, abs = {};
+  B.afps.forEach((a) => { pct[a] = new Array(per.length).fill(null); abs[a] = new Array(per.length).fill(null); });
+  for (const r of R.swaps_sens.rows) { if (r[1] !== f || !(r[2] in pct) || pidx[r[0]] == null) continue; pct[r[2]][pidx[r[0]]] = r[5] == null ? null : Math.round(100 * r[5]) / 100; abs[r[2]][pidx[r[0]]] = r[4] == null ? null : Math.round(100 * r[4]) / 100; }
+  const colA = (a) => slot(B.afps.indexOf(a) + 1);
+  $('sensTit').textContent = 'Sensibilidad a las tasas de EE.UU. · ' + (f === 'TOTAL' ? 'todos los fondos' : 'Fondo ' + f);
+  $('sensSub').textContent = 'Variación estimada del valor del fondo, en % de sus activos, si la tasa del Tesoro a 10 años sube 100 puntos básicos. Sólo los swaps extranjeros de tasas (SET + YSET); no incluye los bonos de la cartera.';
+  leyenda('sensLey', B.afps.map((a) => ({ name: a, color: colA(a), line: true })));
+  const o = baseOpt(); o.xAxis.data = per.map(perCorto); o.yAxis.axisLabel.formatter = (v) => num(v, 0) + ' %';
+  o.tooltip.trigger = 'axis'; o.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o.tooltip.formatter = (ps) => { let h = '<b>' + perLbl(per[ps[0].dataIndex]) + '</b> · por +100 pb'; ps.slice().sort((p1, p2) => (p1.value ?? 0) - (p2.value ?? 0)).forEach((p) => { if (p.value == null) return; h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + num(p.value, 2) + ' %</b> ' + p.seriesName; }); return h; };
+  o.series = B.afps.map((a) => ({ name: a, type: 'line', symbol: 'none', lineStyle: { width: S.afp === a ? 3 : 1.8, color: colA(a) }, itemStyle: { color: colA(a) }, data: pct[a] }));
+  o.dataZoom = [{ type: 'inside' }];
+  chart('sensChart').setOption(o, true);
+  $('sensAbsSub').textContent = 'MMUS$ que cambia el valor de mercado por cada punto básico de alza de la tasa a 10 años, apilado por AFP (' + (f === 'TOTAL' ? 'todos los fondos' : 'Fondo ' + f) + ').';
+  leyenda('sensAbsLey', B.afps.map((a) => ({ name: a, color: colA(a) })));
+  const o2 = baseOpt(); o2.xAxis.data = per.map(perCorto); o2.yAxis.axisLabel.formatter = (v) => num(v, 0);
+  o2.tooltip.trigger = 'axis'; o2.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o2.tooltip.formatter = (ps) => { let h = '<b>' + perLbl(per[ps[0].dataIndex]) + '</b> · MMUS$ por pb'; let t = 0; ps.forEach((p) => { if (!p.value) return; t += p.value; h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + num(p.value, 2) + '</b> ' + p.seriesName; }); return h + '<br>Total <b>' + num(t, 1) + '</b>'; };
+  o2.series = B.afps.map((a) => ({ name: a, type: 'bar', stack: 'v', stackStrategy: 'samesign', barMaxWidth: 10, itemStyle: { color: colA(a) }, data: abs[a].map((v) => v == null ? 0 : v) }));
+  o2.dataZoom = [{ type: 'inside' }];
+  chart('sensAbsChart').setOption(o2, true);
+  const ust = [['DGS2', '2 años', 2], ['DGS10', '10 años', 1], ['DGS30', '30 años', 7]];
+  const rp = R.periodos;
+  leyenda('ustLey', ust.map(([, n, sl]) => ({ name: n, color: slot(sl), line: true })));
+  const o3 = baseOpt(); o3.xAxis.data = rp.map(perCorto); o3.yAxis.scale = true; o3.yAxis.axisLabel.formatter = (v) => num(v, 1) + ' %';
+  o3.tooltip.trigger = 'axis'; o3.tooltip.axisPointer = { type: 'line', lineStyle: { color: css('--muted') } };
+  o3.tooltip.formatter = (ps) => { let h = '<b>' + perLbl(rp[ps[0].dataIndex]) + '</b>'; ps.forEach((p) => { h += '<br><span style="display:inline-block;width:10px;height:3px;background:' + p.color + ';vertical-align:3px;margin-right:6px"></span><b>' + (p.value == null ? '—' : num(p.value, 2) + ' %') + '</b> ' + p.seriesName; }); return h; };
+  o3.series = ust.map(([kk, n, sl]) => ({ name: n, type: 'line', symbol: 'none', lineStyle: { width: kk === 'DGS10' ? 2.4 : 1.4, color: slot(sl) }, itemStyle: { color: slot(sl) }, data: R.ust[kk] }));
+  o3.dataZoom = [{ type: 'inside' }];
+  chart('ustChart').setOption(o3, true);
+}
+
+// ---------- MÉTODO ----------
+function renderDic() {
+  const q = ($('dicQ').value || '').trim().toUpperCase();
+  const rows = Object.entries(B.codigos).map(([c, d]) => ({ c, d: d.d, cl: d.cl, sc: d.sc })).filter((r) => !q || r.c.indexOf(q) >= 0 || r.d.toUpperCase().indexOf(q) >= 0);
+  tablaSort($('dicTabla'), [{ k: 'c', t: 'Código', fmt: (r) => el('span', { class: 'cod' }, r.c) }, { k: 'd', t: 'Descripción' }, { k: 'cl', t: 'Clase', fmt: (r) => el('span', null, el('span', { class: 'sw', style: 'background:' + claseColor(r.cl) }), r.cl) }, { k: 'sc', t: 'Subclase' }], rows, { sortK: 'c' });
+  if ($('dicTabla')._sort.k === 'c' && $('dicTabla')._sort.dir < 0) { $('dicTabla')._sort.dir = 1; tablaSort($('dicTabla'), [{ k: 'c', t: 'Código', fmt: (r) => el('span', { class: 'cod' }, r.c) }, { k: 'd', t: 'Descripción' }, { k: 'cl', t: 'Clase', fmt: (r) => el('span', null, el('span', { class: 'sw', style: 'background:' + claseColor(r.cl) }), r.cl) }, { k: 'sc', t: 'Subclase' }], rows, { sortK: 'c' }); }
+  renderMeta();
+  const m = MES[B.periodos[S.per]];
+  if (m) { const c = m.conciliacion.rows; const esc2 = c.filter((r) => r[5] !== 1).length, res = c.filter((r) => r[6]).length; $('concil').textContent = perLbl(B.periodos[S.per]) + ': ' + esc2 + ' filas fondo·AFP·instrumento escaladas al Cuadro 1 y ' + res + ' con diferencia residual. Datos generados el ' + B.meta.generado + '.'; }
+}
+
+function renderMeta() {
+  const fecha = (x) => x ? x.split('-').reverse().join('-') : '—';
+  const meta = [
+    ['Cartera desagregada (XML SP)', perLbl(B.periodos[0]) + ' – ' + perLbl(B.periodos[B.periodos.length - 1]), B.periodos.length + ' meses. Cuadros 1, 11, 18, 21, 22, 24, 26 y 28.'],
+    ['Valor cuota diario (SP)', R ? perLbl(R.periodos[0]) + ' – ' + fecha(R.ultimo_dia) : 'no cargado', 'Fondos A–E, todas las AFP. spensiones.cl, valores confirmados.'],
+    ['UF diaria', R ? 'hasta ' + fecha(R.ultimo_dia) + ' (uso)' : '—', 'mindicador.cl. Deflactor de la rentabilidad real.'],
+    ['Tasas del Tesoro de EE.UU.', R ? perLbl(R.periodos[0]) + ' en adelante' : '—', 'FRED: DGS2, DGS10 y DGS30, cierre de mes.'],
+    ['Tipo de cambio', 'mensual', 'Implícito en el XML: activos en pesos / activos en dólares (dólar observado del último día hábil).'],
+    ['Instrumentos', Object.keys(B.codigos).length + ' códigos', 'Compendio SP, Libro IV, Título VIII, Capítulo VI, y notas del XML.'],
+    ['Datos generados', B.meta.generado, 'Fecha de la última ejecución del proceso.']
+  ];
+  tablaSort($('metaTabla'), [{ k: 0, t: 'Fuente', noSort: true }, { k: 1, t: 'Cobertura', noSort: true }, { k: 2, t: 'Detalle', noSort: true }], meta, { sortK: null });
+  const mets = [
+    ['Año a la fecha', 'ytd_real', 'Índice real al cierre del mes / índice real al 31 de diciembre anterior − 1', 'Desde el 31 de diciembre'],
+    ['12 meses', 'r12_real', 'Índice real hoy / índice real 12 meses antes − 1', '12 meses'],
+    ['36 m y 60 m anual', 'r36_real_anual, r60_real_anual', '(1 + rentabilidad acumulada)^(12 / n) − 1', '36 y 60 meses'],
+    ['Volatilidad anual', 'vol_anual_12m', 'Desviación estándar de los retornos reales diarios × √250', '12 meses de días con valorización'],
+    ['VaR 95 % y 99 % a 1 día', 'var95_1d, var99_1d', 'Percentil 5 % y 1 % de los retornos reales diarios, con signo cambiado (pérdida)', '12 meses (~250 días)'],
+    ['CVaR 95 % y 99 % a 1 día', 'cvar95_1d, cvar99_1d', 'Promedio de los retornos iguales o peores que ese percentil, con signo cambiado. También llamado expected shortfall', '12 meses (~250 días)'],
+    ['Caída máxima', 'max_drawdown_36m', 'Mayor caída del índice real diario desde un máximo previo: −mín(índice / máximo acumulado − 1)', '36 meses'],
+    ['VaR 95 % mensual (sólo en tablas)', 'var95_mensual_36m', 'Percentil 5 % de los retornos reales mensuales, con signo cambiado; exige 24 meses', '36 meses'],
+    ['Peor mes (sólo en tablas)', 'peor_mes_36m', 'Menor retorno real mensual, con signo cambiado', '36 meses']
+  ];
+  tablaSort($('metTabla'), [{ k: 0, t: 'Métrica', noSort: true }, { k: 1, t: 'Columna en riesgo.csv', noSort: true, fmt: (r) => el('span', { class: 'cod' }, r[1]) }, { k: 2, t: 'Cálculo', noSort: true }, { k: 3, t: 'Ventana', noSort: true }], mets, { sortK: null });
+  const tabs = [
+    ['totales', 'Activos por fondo × AFP en MM$ y MMUS$; tipo de cambio implícito'],
+    ['diversificacion', 'Cuadro 1 con sección, grupo, código y nota; % y montos'],
+    ['posiciones', 'Cuadros 11 y 21: emisor × instrumento × moneda × fondo × AFP'],
+    ['cuotas_nacionales', 'Cuadro 18: cuotas de fondos de inversión y mutuos nacionales por fondo'],
+    ['swaps', 'Cuadros 26 y 28: valorización por tipo, contraparte y unidad'],
+    ['forwards', 'Cuadros 22 y 24: nocional por moneda objeto y contraparte'],
+    ['indicadores', 'Cuadros 3, 5, 6 y 9: tasas de valoración, riesgo y plazo'],
+    ['valor_cuota', 'Valor cuota y patrimonio diarios, con UF (incluye índice Sistema)'],
+    ['rentab_mensual', 'Rentabilidad nominal y real mensual por fondo × AFP'],
+    ['riesgo', 'Métricas de rentabilidad y riesgo a cada fin de mes'],
+    ['swaps_inicio', 'Primer mes con swaps extranjeros de tasas por AFP y fondo'],
+    ['swaps_sensibilidad', 'Valor de mercado y DV01 implícito de los swaps de tasas, mensual']
+  ];
+  tablaSort($('tabTablas'), [{ k: 0, t: 'Tabla', noSort: true, fmt: (r) => el('span', { class: 'cod' }, r[0]) }, { k: 1, t: 'Contenido', noSort: true }], tabs, { sortK: null });
+}
+
+// ---------- render general ----------
+function render() {
+  ['mapa', 'evo', 'ren', 'der', 'emi', 'met'].forEach((k) => { $('t-' + k).hidden = S.tab !== k; const b = $('tab-' + k); if (b) b.setAttribute('aria-selected', String(S.tab === k)); });
+  $('mesAnt').disabled = S.per <= 0; $('mesSig').disabled = S.per >= B.periodos.length - 1;
+  syncChips('fondos', S.fondo); syncChips('unidades', S.unidad);
+  if (S.tab === 'mapa') renderMapa();
+  else if (S.tab === 'evo') renderEvo();
+  else if (S.tab === 'der') renderDer();
+  else if (S.tab === 'ren') renderRen();
+  else if (S.tab === 'emi') { renderEmi(); if (S.emi.sel) renderHist(); }
+  else renderDic();
+  requestAnimationFrame(() => Object.values(charts).forEach((c) => { const d = c.getDom(); if (d.offsetParent) c.resize(); }));
+}
+function errorCarga(e) { const s = $('estado'); s.hidden = false; s.className = 'aviso'; s.textContent = 'No se pudieron cargar los datos: ' + e.message + '. Verifique que la carpeta datos/ esté junto a index.html.'; }
+async function iniciar() {
+  if (!window.echarts) { try { await cargarScript('lib/echarts.min.js'); } catch (e) { errorCarga(new Error('falta la biblioteca de gráficos (sin conexión a internet y sin lib/echarts.min.js)')); return; } }
+  if (typeof DecompressionStream === 'undefined') { errorCarga(new Error('este navegador no soporta DecompressionStream; use una versión reciente de Chrome, Edge, Firefox o Safari')); return; }
+  if (!(window.DATOS && window.DATOS.base)) { errorCarga(new Error('no se encontró datos/base.js')); return; }
+  B = await decode(window.DATOS.base); delete window.DATOS.base;
+  if (window.DATOS.rentab) { R = await decode(window.DATOS.rentab); delete window.DATOS.rentab; }
+  S.per = B.periodos.length - 1;
+  $('rango').textContent = perLbl(B.periodos[0]).toUpperCase() + ' – ' + perLbl(B.periodos[S.per]).toUpperCase();
+  $('fuente').textContent = 'Superintendencia de Pensiones · cartera desagregada mensual (XML) · ' + B.periodos.length + ' meses · actualizado ' + B.meta.generado;
+  const h = (location.hash || '').replace('#', ''); if (['mapa', 'evo', 'ren', 'der', 'emi', 'met'].includes(h)) S.tab = h;
+  construirFiltros();
+  $('estado').hidden = true;
+  render();
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => Object.values(charts).forEach((c) => c.resize()), 120); });
+  const rerender = () => { Object.values(charts).forEach((c) => c.dispose()); for (const k in charts) delete charts[k]; render(); };
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rerender); } catch (e) {}
+  new MutationObserver(rerender).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+}
+iniciar().catch(errorCarga);
+})();
+</script>
